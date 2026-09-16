@@ -1,0 +1,4855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCC System — Kabi Taxi LLC</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#1a3a5c;--navy2:#15304e;--accent:#2563eb;--green:#059669;--green2:#047857;--red:#dc2626;--orange:#d97706;--bg:#f1f5f9;--surface:#fff;--surface2:#f8fafc;--border:#e2e8f0;--border2:#cbd5e1;--text:#0f172a;--text2:#475569;--text3:#94a3b8}
+body{font-family:Arial,sans-serif;font-size:13px;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* LOGIN */
+#loginScreen{display:flex;align-items:center;justify-content:center;height:100vh;background:var(--navy);position:fixed;inset:0;z-index:1000}
+.login-box{background:#fff;border-radius:16px;padding:36px 40px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center}
+.login-logo{font-size:28px;margin-bottom:4px}
+.login-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.login-sub{font-size:11px;color:var(--text2);margin-bottom:24px}
+.login-box input{width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:8px;font-size:13px;margin-bottom:10px;outline:none;text-align:left}
+.login-box input:focus{border-color:var(--accent)}
+.login-btn{width:100%;padding:11px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px}
+.login-btn:hover{background:var(--navy2)}
+.login-err{color:var(--red);font-size:12px;margin-top:8px;display:none}
+.login-loading{color:var(--text2);font-size:12px;margin-top:8px;display:none}
+
+/* SHELL */
+#appShell{display:none;flex:1;overflow:hidden;flex-direction:column;height:100vh}
+.topbar{background:var(--navy);color:#fff;padding:0 20px;height:50px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-brand{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.topbar-brand span{font-size:11px;opacity:.6;font-weight:400}
+.topbar-right{display:flex;align-items:center;gap:10px;font-size:12px}
+.tb-user{background:rgba(255,255,255,.12);padding:4px 12px;border-radius:20px}
+.tb-badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:#fbbf24;color:#000}
+.tb-badge.user{background:#34d399;color:#065f46}
+.tb-badge.gm{background:#7c3aed;color:#fff}
+.badge.gm{background:#ede9fe;color:#5b21b6}
+.tb-logout{background:rgba(255,255,255,.1);border:none;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer}
+.body{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:205px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.nav-group{padding:8px 0 2px}
+.nav-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding:0 14px 3px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;color:var(--text2);cursor:pointer;border-left:3px solid transparent;transition:all .1s}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:#eff6ff;color:var(--accent);border-left-color:var(--accent);font-weight:600}
+.nav-item.monly{display:none}
+.nav-item.monly.show{display:flex}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.page-bar{padding:10px 18px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.page-title{font-size:14px;font-weight:600}
+.content{flex:1;overflow-y:auto;padding:16px 18px}
+
+/* BUTTONS */
+.btn{padding:6px 13px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:Arial,sans-serif;transition:all .1s}
+.btn:hover{background:var(--surface2)}
+.btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn.primary:hover{background:var(--navy2)}
+.btn.success{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.danger{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.warn{background:var(--orange);color:#fff;border-color:var(--orange)}
+.btn.sm{padding:3px 9px;font-size:11px}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:600}
+.card-body{padding:14px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.stat-val{font-size:24px;font-weight:700;line-height:1}
+.stat-lbl{font-size:11px;color:var(--text2);margin-top:3px}
+.stat.red .stat-val{color:var(--red)}
+.stat.green .stat-val{color:var(--green)}
+.stat.orange .stat-val{color:var(--orange)}
+.stat.navy .stat-val{color:var(--navy)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:7px 11px;text-align:left;font-size:11px;font-weight:600;color:var(--text2);background:var(--surface2);border-bottom:1px solid var(--border)}
+.tbl td{padding:8px 11px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--surface2)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600}
+.badge.pending{background:#fef3c7;color:#92400e}
+.badge.done{background:#d1fae5;color:#065f46}
+.badge.danger{background:#fee2e2;color:#991b1b}
+.badge.info{background:#dbeafe;color:#1e40af}
+.badge.master{background:#fbbf24;color:#000}
+.badge.user{background:#34d399;color:#065f46}
+.badge.major{background:#fee2e2;color:#991b1b}
+.badge.moderate{background:#fef3c7;color:#92400e}
+.badge.minor{background:#d1fae5;color:#065f46}
+
+/* FORM */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fgrid.one{grid-template-columns:1fr}
+.fgrid.three{grid-template-columns:1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:600;color:var(--text2)}
+.field input,.field select,.field textarea{padding:7px 10px;border:1px solid var(--border2);border-radius:7px;font-size:12px;font-family:Arial,sans-serif;color:var(--text);outline:none;background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:60px}
+
+/* SEARCH */
+.sbar{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.sbar input{flex:1;padding:7px 11px;border:1px solid var(--border2);border-radius:7px;font-size:12px;outline:none}
+.sbar input:focus{border-color:var(--accent)}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface2)}
+.tab{padding:8px 14px;font-size:12px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+
+/* MODAL */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center}
+.moverlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal.sm{width:420px}
+.mhead{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.mtitle{font-size:14px;font-weight:600}
+.mclose{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text2);line-height:1}
+.mbody{padding:18px}
+.mfoot{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:#fff}
+
+/* DRIVER PROFILE */
+.drv-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
+.drv-col{padding:10px 14px;border-right:1px solid var(--border)}
+.drv-col:last-child{border-right:none}
+.drv-col-title{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;margin-bottom:6px}
+.drv-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:12px}
+
+/* LOADING */
+.loading{text-align:center;padding:20px;color:var(--text3);font-size:12px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.screen{display:none}
+.screen.active{display:block}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🚖</div>
+    <div class="login-title">OCC System</div>
+    <div class="login-sub">Kabi Taxi LLC — KPI / OCC Department</div>
+    <input type="text" id="loginUser" placeholder="Username" autocomplete="off">
+    <input type="password" id="loginPass" placeholder="Password">
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="loginErr">❌ Invalid username or password</div>
+    <div class="login-loading" id="loginLoading"><span class="spinner"></span>Signing in...</div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="appShell">
+  <div class="topbar">
+    <div class="topbar-brand">🚖 OCC System <span>Kabi Taxi LLC</span></div>
+    <div class="topbar-right">
+      <div class="tb-user" id="topUser"></div>
+      <span class="tb-badge" id="topBadge">MASTER</span>
+      <button class="tb-logout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="body">
+    <div class="sidebar">
+      <div class="nav-group">
+        <div class="nav-label">Main</div>
+        <div class="nav-item active" onclick="goTo('dashboard',this)">📊 Dashboard</div>
+        <div class="nav-item" onclick="goTo('pending',this)">⏳ Pending Tasks</div>
+        <div class="nav-item" onclick="goTo('driver',this)">🔍 Driver Search</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Operations</div>
+        <div class="nav-item" onclick="goTo('callrecord',this)">📞 Call Record</div>
+        <div class="nav-item" onclick="goTo('counselling',this)">📋 Counselling</div>
+        <div class="nav-item" onclick="goTo('violations',this)">⚠️ Violation Register</div>
+        <div class="nav-item" onclick="goTo('fines',this)">💰 Fine Upload</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Admin</div>
+        <div class="nav-item monly" onclick="goTo('users',this)">👥 User Management</div>
+        <div class="nav-item monly" onclick="goTo('settings',this)">⚙️ Settings</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="page-bar">
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div id="pageActions"></div>
+      </div>
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <div id="screen-dashboard" class="screen active">
+          <div class="stats">
+            <div class="stat red"><div class="stat-val" id="s-pending">—</div><div class="stat-lbl">⏳ Pending Tasks</div></div>
+            <div class="stat orange"><div class="stat-val" id="s-fines">—</div><div class="stat-lbl">💰 Fines to Upload</div></div>
+            <div class="stat green"><div class="stat-val" id="s-cleared">—</div><div class="stat-lbl">✅ Cleared Today</div></div>
+            <div class="stat navy"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">📁 Total Violations</div></div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">⏳ Pending Tasks</div>
+              <button class="btn sm primary" onclick="goTo('pending',document.querySelectorAll('.nav-item')[1])">View All</button>
+            </div>
+            <div id="dash-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
+          </div>
+        </div>
+
+        <!-- PENDING TASKS -->
+        <div id="screen-pending" class="screen">
+          <div class="card">
+            <div class="sbar">
+              <input type="text" id="pendSearch" placeholder="Search by Driver ID or CT Num..." oninput="renderPending()">
+              <button class="btn primary" onclick="openModal('taskModal')">➕ New Task</button>
+            </div>
+            <div class="tabs">
+              <div class="tab active" onclick="setTab('all',this)">All</div>
+              <div class="tab" onclick="setTab('Suspended',this)">Suspended</div>
+              <div class="tab" onclick="setTab('Reported',this)">Reported</div>
+              <div class="tab" onclick="setTab('Fine Pending',this)">Fine Pending</div>
+              <div class="tab" onclick="setTab('Cleared',this)">Cleared</div>
+            </div>
+            <div id="pending-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
+          </div>
+        </div>
+
+        <!-- DRIVER SEARCH -->
+        <div id="screen-driver" class="screen">
+          <div class="card">
+            <div class="sbar">
+              <input type="text" id="drvInput" placeholder="Enter KB Number (e.g. KB1172) or Driver ID...">
+              <button class="btn primary" onclick="searchDriver()">🔍 Search</button>
+            </div>
+          </div>
+          <div id="drvResult" class="hidden">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">👤 Driver Profile</div>
+                <span class="badge info" id="drvMeta"></span>
+              </div>
+              <div class="drv-grid">
+                <div class="drv-col"><div class="drv-col-title">Violations</div><div id="drvViol"></div></div>
+                <div class="drv-col"><div class="drv-col-title">Call Record</div><div id="drvCalls"></div></div>
+                <div class="drv-col"><div class="drv-col-title">Fines</div><div id="drvFines"></div></div>
+              </div>
+              <div style="padding:10px 14px;border-top:1px solid var(--border)">
+                <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">Pending Actions</div>
+                <div id="drvActions" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CALL RECORD -->
+        <div id="screen-callrecord" class="screen">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">📞 Call Record</div>
+              <button class="btn primary" onclick="openModal('callModal')">➕ Log Call</button>
+            </div>
+            <div id="call-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
+          </div>
+        </div>
+
+        <!-- COUNSELLING -->
+        <div id="screen-counselling" class="screen">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">📋 Counselling Record</div>
+              <button class="btn primary" onclick="openModal('counselModal')">➕ Add Record</button>
+            </div>
+            <div id="counsel-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
+          </div>
+        </div>
+
+        <!-- VIOLATIONS -->
+        <div id="screen-violations" class="screen">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">⚠️ Violation Register</div>
+              <button class="btn sm" onclick="exportViolations()">⬇️ Export</button>
+            </div>
+            <div class="sbar">
+              <input type="text" id="violSearch" placeholder="Search by Driver ID, violation..." oninput="renderViolations()">
+            </div>
+            <div id="viol-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
+          </div>
+        </div>
+
+        <!-- FINES -->
+        <div id="screen-fines" class="screen">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">💰 Fine Upload Queue</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn success" onclick="downloadFines()">⬇️ Download Dynamics Template</button>
+              </div>
+            </div>
+            <div id="fine-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
+            <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:12px;color:var(--text2)" id="fine-summary">Loading...</span>
+              <button class="btn success" onclick="downloadFines()">⬇️ Download All Pending</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- USERS -->
+        <div id="screen-users" class="screen">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">👥 User Management</div>
+              <button class="btn primary" onclick="openModal('userModal')">➕ Add User</button>
+            </div>
+            <div id="user-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
+          </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="screen-settings" class="screen">
+          <div class="card">
+            <div class="card-head"><div class="card-title">⚙️ Fine Code Amounts</div></div>
+            <div class="card-body">
+              <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Set the fine amount for each violation code. These will auto-fill when creating tasks.</p>
+              <table class="tbl">
+                <thead><tr><th>Code</th><th>Description</th><th>Severity</th><th>Amount (AED)</th><th>Save</th></tr></thead>
+                <tbody id="fineamt-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NEW TASK -->
+<div class="moverlay" id="taskModal">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle">➕ New Violation Task</div><button class="mclose" onclick="closeModal('taskModal')">✕</button></div>
+    <div class="mbody">
+      <div class="fgrid">
+        <div class="field"><label>KB Number *</label><input type="text" id="t-kb" placeholder="e.g. KB1172" oninput="autoFillKB('t')"></div>
+        <div class="field"><label>Plate (auto-filled)</label><input type="text" id="t-plate" placeholder="Auto-filled" readonly></div>
+        <div class="field"><label>Driver ID / Meter ID *</label><input type="text" id="t-did" placeholder="e.g. 3120193"></div>
+        <div class="field"><label>Shift *</label>
+          <select id="t-shift"><option value="">— Select —</option><option>12D</option><option>12N</option><option>24HRS</option></select>
+        </div>
+      </div>
+      <div class="fgrid">
+        <div class="field"><label>Violation Type *</label>
+          <select id="t-vtype" onchange="autoFillFineCode('t')">
+            <option value="">— Select violation —</option>
+          </select>
+        </div>
+        <div class="field"><label>Fine Code (auto-filled)</label><input type="text" id="t-fcode" readonly placeholder="Auto-filled"></div>
+        <div class="field"><label>Fine Amount AED</label><input type="number" id="t-famt" placeholder="0"></div>
+        <div class="field"><label>Days (if applicable)</label><input type="number" id="t-days" placeholder="e.g. 3"></div>
+      </div>
+      <div class="fgrid">
+        <div class="field"><label>Violation Date *</label><input type="date" id="t-date"></div>
+        <div class="field"><label>Violation Time *</label><input type="time" id="t-time"></div>
+      </div>
+      <div class="fgrid one">
+        <div class="field"><label>Remarks</label><textarea id="t-remarks" placeholder="Additional notes..."></textarea></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="closeModal('taskModal')">Cancel</button>
+      <button class="btn primary" onclick="submitTask()">Create Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CALL RECORD -->
+<div class="moverlay" id="callModal">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle">📞 Log Call Record</div><button class="mclose" onclick="closeModal('callModal')">✕</button></div>
+    <div class="mbody">
+      <div class="fgrid">
+        <div class="field"><label>KB Number *</label><input type="text" id="c-kb" placeholder="e.g. KB1172" oninput="autoFillKB('c')"></div>
+        <div class="field"><label>Driver ID *</label><input type="text" id="c-did" placeholder="e.g. 3120193"></div>
+        <div class="field"><label>Reason for Call *</label>
+          <select id="c-reason">
+            <option value="">— Select reason —</option>
+            <option>Not sign-on</option><option>Not working</option><option>Violation counselling</option>
+            <option>E-hail counselling — Careem</option><option>E-hail counselling — ZED</option>
+            <option>SSO alarm</option><option>Black trip follow-up</option>
+            <option>ZED acceptance</option><option>Careem acceptance</option>
+            <option>Peak hour reminder</option><option>Late login</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Driver Answered? *</label>
+          <select id="c-answered">
+            <option value="">— Select —</option>
+            <option value="Yes">Yes — Answered</option>
+            <option value="No">No — Not answered</option>
+            <option value="Busy">Busy / Declined</option>
+          </select>
+        </div>
+      </div>
+      <div class="fgrid one">
+        <div class="field"><label>Driver Response / Reason Given</label>
+          <select id="c-response">
+            <option value="">— Select if answered —</option>
+            <option>Vehicle in accident</option><option>Sick leave / Feeling sick</option>
+            <option>Meter not starting</option><option>Personal emergency</option>
+            <option>Traffic / Delayed</option><option>Vehicle breakdown</option>
+            <option>Will sign on shortly</option><option>Applied leave</option>
+            <option>Vehicle in garage</option><option>Other — see remarks</option>
+          </select>
+        </div>
+      </div>
+      <div class="fgrid one">
+        <div class="field"><label>Remarks</label><textarea id="c-remarks" placeholder="Additional notes..."></textarea></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="closeModal('callModal')">Cancel</button>
+      <button class="btn primary" onclick="submitCall()">Save Call Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: COUNSELLING -->
+<div class="moverlay" id="counselModal">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle">📋 Counselling Record</div><button class="mclose" onclick="closeModal('counselModal')">✕</button></div>
+    <div class="mbody">
+      <div class="fgrid">
+        <div class="field"><label>KB Number *</label><input type="text" id="cc-kb" placeholder="e.g. KB1172" oninput="autoFillKB('cc')"></div>
+        <div class="field"><label>Driver ID *</label><input type="text" id="cc-did" placeholder="e.g. 3120193"></div>
+        <div class="field"><label>Violation Type *</label>
+          <select id="cc-vtype">
+            <option value="">— Select —</option>
+            <option>Not working 2 days</option><option>Not working 3+ days</option>
+            <option>Not sign-on peak hour</option><option>Black trip</option>
+            <option>Low trips / Zero trips</option><option>ZED low acceptance</option>
+            <option>Careem low acceptance</option><option>Late login</option>
+            <option>Idle engine</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Days Not Working</label><input type="number" id="cc-days" placeholder="e.g. 3"></div>
+      </div>
+      <div class="fgrid">
+        <div class="field"><label>Warning Letter Given? *</label>
+          <select id="cc-letter">
+            <option value="">— Select —</option>
+            <option value="Yes">Yes — Signed</option>
+            <option value="No">No — Not required</option>
+            <option value="Refused">Refused to sign</option>
+          </select>
+        </div>
+        <div class="field"><label>Suspension Lifted?</label>
+          <select id="cc-lifted"><option value="Yes">Yes</option><option value="No">No</option></select>
+        </div>
+        <div class="field"><label>Fine Amount AED</label><input type="number" id="cc-fine" placeholder="0"></div>
+        <div class="field"><label>Fine to Upload?</label>
+          <select id="cc-fupload" onchange="toggleFineRow()">
+            <option value="No">No</option><option value="Yes">Yes</option>
+          </select>
+        </div>
+      </div>
+      <div class="fgrid" id="cc-finerow" style="display:none">
+        <div class="field"><label>Fine Code</label>
+          <select id="cc-fcode"><option value="">— Select —</option></select>
+        </div>
+        <div class="field"><label>Violation Date & Time</label><input type="datetime-local" id="cc-fdate"></div>
+      </div>
+      <div class="fgrid one">
+        <div class="field"><label>Counselling Notes</label><textarea id="cc-notes" placeholder="What was discussed, driver response, action taken..."></textarea></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="closeModal('counselModal')">Cancel</button>
+      <button class="btn primary" onclick="submitCounsel()">Save Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADD USER -->
+<div class="moverlay" id="userModal">
+  <div class="modal sm">
+    <div class="mhead"><div class="mtitle">👥 Add User</div><button class="mclose" onclick="closeModal('userModal')">✕</button></div>
+    <div class="mbody">
+      <div class="fgrid one" style="gap:10px">
+        <div class="field"><label>Full Name *</label><input type="text" id="u-name" placeholder="e.g. Ahmed Ali"></div>
+        <div class="field"><label>Username *</label><input type="text" id="u-user" placeholder="e.g. ahmed"></div>
+        <div class="field"><label>Password *</label><input type="password" id="u-pass" placeholder="Set password"></div>
+        <div class="field"><label>Role *</label>
+          <select id="u-role"><option value="Standard">Standard</option><option value="Master">Master</option><option value="Grand Master">Grand Master</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="closeModal('userModal')">Cancel</button>
+      <button class="btn primary" onclick="addUser()">Add User</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+var API = 'https://script.google.com/macros/s/AKfycbyE9jxgDeZvV8SSWlQwDXbQmbKBsq8HyS7SL_edJiBWLVxSiXDyHirzhL5pPofySZFd/exec';
+var currentUser = null;
+var DB = { tasks:[], calls:[], counselling:[], violations:[], fines:[], users:[] };
+var currentTab = 'all';
+var fineAmounts = {};
+
+var VEHICLES = {
+  "KB0001":"DXB 1052",
+  "KB0002":"DXB 7477",
+  "KB0003":"DXB 48278",
+  "KB0004":"DXB 1438",
+  "KB0005":"DXB 48111",
+  "KB0006":"DXB 48088",
+  "KB0007":"DXB 25201",
+  "KB0008":"DXB 78124",
+  "KB0009":"DXB 7293",
+  "KB0010":"DXB 1252",
+  "KB0011":"DXB 48055",
+  "KB0012":"DXB 48360",
+  "KB0013":"DXB 66441",
+  "KB0014":"DXB 4012",
+  "KB0015":"DXB 1102",
+  "KB0016":"DXB 1109",
+  "KB0017":"DXB 1117",
+  "KB0018":"DXB 1154",
+  "KB0019":"DXB 1173",
+  "KB0020":"DXB 1024",
+  "KB0021":"DXB 1243",
+  "KB0022":"DXB 1257",
+  "KB0023":"DXB 1175",
+  "KB0024":"DXB 1261",
+  "KB0025":"DXB 1299",
+  "KB0026":"DXB 1306",
+  "KB0027":"DXB 1231",
+  "KB0028":"DXB 1206",
+  "KB0029":"DXB 7277",
+  "KB0030":"DXB 1281",
+  "KB0031":"DXB 1237",
+  "KB0032":"DXB 5615",
+  "KB0033":"DXB 1265",
+  "KB0034":"DXB 1323",
+  "KB0035":"DXB 1266",
+  "KB0036":"DXB 1354",
+  "KB0037":"DXB 2560",
+  "KB0038":"DXB 2571",
+  "KB0039":"DXB 2630",
+  "KB0040":"DXB 1327",
+  "KB0041":"DXB 2612",
+  "KB0042":"DXB 2537",
+  "KB0043":"DXB 2640",
+  "KB0044":"DXB 1476",
+  "KB0045":"DXB 1370",
+  "KB0046":"DXB 1449",
+  "KB0047":"DXB 2525",
+  "KB0048":"DXB 2679",
+  "KB0049":"DXB 1489",
+  "KB0050":"DXB 2523",
+  "KB0051":"DXB 1462",
+  "KB0052":"DXB 2694",
+  "KB0053":"DXB 1358",
+  "KB0054":"DXB 2539",
+  "KB0055":"DXB 2541",
+  "KB0056":"DXB 80105",
+  "KB0057":"DXB 1350",
+  "KB0058":"DXB 1410",
+  "KB0059":"DXB 1357",
+  "KB0060":"DXB 2700",
+  "KB0061":"DXB 1385",
+  "KB0062":"DXB 1432",
+  "KB0063":"DXB 1360",
+  "KB0064":"DXB 1330",
+  "KB0065":"DXB 2623",
+  "KB0066":"DXB 2703",
+  "KB0067":"DXB 2702",
+  "KB0068":"DXB 76499",
+  "KB0069":"DXB 21554",
+  "KB0070":"DXB 1324",
+  "KB0071":"DXB 7152",
+  "KB0072":"DXB 78399",
+  "KB0073":"DXB 80466",
+  "KB0074":"DXB 76341",
+  "KB0075":"DXB 21889",
+  "KB0076":"DXB 4064",
+  "KB0077":"DXB 7016",
+  "KB0078":"DXB 25492",
+  "KB0079":"DXB 76251",
+  "KB0080":"DXB 76395",
+  "KB0081":"DXB 66054",
+  "KB0082":"DXB 78436",
+  "KB0083":"DXB 76350",
+  "KB0084":"DXB 2910",
+  "KB0085":"DXB 76429",
+  "KB0086":"DXB 48824",
+  "KB0087":"DXB 76112",
+  "KB0088":"DXB 17333",
+  "KB0089":"DXB 76238",
+  "KB0090":"DXB 25256",
+  "KB0091":"DXB 78229",
+  "KB0092":"DXB 21868",
+  "KB0093":"DXB 48777",
+  "KB0094":"DXB 25288",
+  "KB0095":"DXB 80167",
+  "KB0096":"DXB 17360",
+  "KB0097":"DXB 2514",
+  "KB0098":"DXB 1483",
+  "KB0099":"DXB 78279",
+  "KB0100":"DXB 66297",
+  "KB0101":"DXB 21640",
+  "KB0102":"DXB 78480",
+  "KB0103":"DXB 1286",
+  "KB0104":"DXB 7017",
+  "KB0105":"DXB 21576",
+  "KB0106":"DXB 66156",
+  "KB0107":"DXB 2824",
+  "KB0108":"DXB 4112",
+  "KB0109":"DXB 76495",
+  "KB0110":"DXB 1374",
+  "KB0111":"DXB 4147",
+  "KB0112":"DXB 4487",
+  "KB0113":"DXB 66405",
+  "KB0114":"DXB 21976",
+  "KB0115":"DXB 66042",
+  "KB0116":"DXB 76068",
+  "KB0117":"DXB 25273",
+  "KB0118":"DXB 48774",
+  "KB0119":"DXB 5827",
+  "KB0120":"DXB 7168",
+  "KB0121":"DXB 80418",
+  "KB0122":"DXB 25058",
+  "KB0123":"DXB 78295",
+  "KB0124":"DXB 25348",
+  "KB0125":"DXB 2796",
+  "KB0126":"DXB 1071",
+  "KB0127":"DXB 17019",
+  "KB0128":"DXB 48439",
+  "KB0129":"DXB 5585",
+  "KB0130":"DXB 48292",
+  "KB0131":"DXB 78378",
+  "KB0132":"DXB 78332",
+  "KB0133":"DXB 80023",
+  "KB0134":"DXB 1271",
+  "KB0135":"DXB 66243",
+  "KB0136":"DXB 7040",
+  "KB0137":"DXB 4485",
+  "KB0138":"DXB 21662",
+  "KB0139":"DXB 21865",
+  "KB0140":"DXB 21674",
+  "KB0141":"DXB 4334",
+  "KB0142":"DXB 7107",
+  "KB0143":"DXB 7105",
+  "KB0144":"DXB 66365",
+  "KB0145":"DXB 1114",
+  "KB0146":"DXB 4032",
+  "KB0147":"DXB 4049",
+  "KB0148":"DXB 2825",
+  "KB0149":"DXB 80277",
+  "KB0150":"DXB 5727",
+  "KB0151":"DXB 2812",
+  "KB0152":"DXB 2753",
+  "KB0153":"DXB 4128",
+  "KB0154":"DXB 2890",
+  "KB0155":"DXB 4145",
+  "KB0156":"DXB 4003",
+  "KB0157":"DXB 2962",
+  "KB0158":"DXB 2831",
+  "KB0159":"DXB 4152",
+  "KB0160":"DXB 2861",
+  "KB0161":"DXB 2874",
+  "KB0162":"DXB 4058",
+  "KB0163":"DXB 4072",
+  "KB0164":"DXB 4075",
+  "KB0165":"DXB 2867",
+  "KB0166":"DXB 2879",
+  "KB0167":"DXB 4089",
+  "KB0168":"DXB 4098",
+  "KB0169":"DXB 2902",
+  "KB0170":"DXB 2906",
+  "KB0171":"DXB 4084",
+  "KB0172":"DXB 2914",
+  "KB0173":"DXB 2917",
+  "KB0174":"DXB 2959",
+  "KB0175":"DXB 2852",
+  "KB0176":"DXB 2903",
+  "KB0177":"DXB 2900",
+  "KB0178":"DXB 2813",
+  "KB0179":"DXB 4173",
+  "KB0180":"DXB 4183",
+  "KB0181":"DXB 4196",
+  "KB0182":"DXB 4235",
+  "KB0183":"DXB 4249",
+  "KB0184":"DXB 4250",
+  "KB0185":"DXB 4286",
+  "KB0186":"DXB 4290",
+  "KB0187":"DXB 4343",
+  "KB0188":"DXB 4348",
+  "KB0189":"DXB 4349",
+  "KB0190":"DXB 4360",
+  "KB0191":"DXB 4365",
+  "KB0192":"DXB 4376",
+  "KB0193":"DXB 4395",
+  "KB0194":"DXB 5773",
+  "KB0195":"DXB 4423",
+  "KB0196":"DXB 4443",
+  "KB0197":"DXB 4444",
+  "KB0198":"DXB 4445",
+  "KB0199":"DXB 4461",
+  "KB0200":"DXB 4479",
+  "KB0201":"DXB 5511",
+  "KB0202":"DXB 5713",
+  "KB0203":"DXB 5539",
+  "KB0204":"DXB 5566",
+  "KB0205":"DXB 5583",
+  "KB0206":"DXB 5593",
+  "KB0207":"DXB 5603",
+  "KB0208":"DXB 5612",
+  "KB0209":"DXB 5614",
+  "KB0210":"DXB 5619",
+  "KB0211":"DXB 5632",
+  "KB0212":"DXB 5642",
+  "KB0213":"DXB 5646",
+  "KB0214":"DXB 5656",
+  "KB0215":"DXB 5661",
+  "KB0216":"DXB 5682",
+  "KB0217":"DXB 5687",
+  "KB0218":"DXB 5688",
+  "KB0219":"DXB 5692",
+  "KB0220":"DXB 5987",
+  "KB0221":"DXB 7415",
+  "KB0222":"DXB 7338",
+  "KB0223":"DXB 7109",
+  "KB0224":"DXB 7166",
+  "KB0225":"DXB 5995",
+  "KB0226":"DXB 7256",
+  "KB0227":"DXB 7051",
+  "KB0228":"DXB 7350",
+  "KB0229":"DXB 7285",
+  "KB0230":"DXB 7425",
+  "KB0231":"DXB 7170",
+  "KB0232":"DXB 7124",
+  "KB0233":"DXB 7369",
+  "KB0234":"DXB 7319",
+  "KB0235":"DXB 5904",
+  "KB0236":"DXB 5949",
+  "KB0237":"DXB 4405",
+  "KB0238":"DXB 7478",
+  "KB0239":"DXB 5868",
+  "KB0240":"DXB 5841",
+  "KB0241":"DXB 5813",
+  "KB0242":"DXB 5787",
+  "KB0243":"DXB 5921",
+  "KB0244":"DXB 5790",
+  "KB0245":"DXB 5923",
+  "KB0246":"DXB 5917",
+  "KB0247":"DXB 5954",
+  "KB0248":"DXB 5964",
+  "KB0249":"DXB 5805",
+  "KB0250":"DXB 5936",
+  "KB0251":"DXB 7120",
+  "KB0252":"DXB 5978",
+  "KB0253":"DXB 7418",
+  "KB0254":"DXB 5783",
+  "KB0255":"DXB 7053",
+  "KB0256":"DXB 7303",
+  "KB0257":"DXB 7328",
+  "KB0258":"DXB 7367",
+  "KB0259":"DXB 5992",
+  "KB0260":"DXB 25034",
+  "KB0261":"DXB 7154",
+  "KB0262":"DXB 7435",
+  "KB0263":"DXB 7346",
+  "KB0264":"DXB 7337",
+  "KB0265":"DXB 7392",
+  "KB0266":"DXB 7469",
+  "KB0267":"DXB 7421",
+  "KB0268":"DXB 7255",
+  "KB0269":"DXB 7429",
+  "KB0270":"DXB 17056",
+  "KB0271":"DXB 17035",
+  "KB0272":"DXB 17036",
+  "KB0273":"DXB 17068",
+  "KB0274":"DXB 17037",
+  "KB0275":"DXB 17120",
+  "KB0276":"DXB 17152",
+  "KB0277":"DXB 17093",
+  "KB0278":"DXB 17007",
+  "KB0279":"DXB 17033",
+  "KB0280":"DXB 17054",
+  "KB0281":"DXB 17097",
+  "KB0282":"DXB 17279",
+  "KB0283":"DXB 17144",
+  "KB0284":"DXB 17170",
+  "KB0285":"DXB 17138",
+  "KB0286":"DXB 17266",
+  "KB0287":"DXB 17225",
+  "KB0288":"DXB 17140",
+  "KB0289":"DXB 7485",
+  "KB0290":"DXB 17155",
+  "KB0291":"DXB 17208",
+  "KB0292":"DXB 17213",
+  "KB0293":"DXB 17164",
+  "KB0294":"DXB 17288",
+  "KB0295":"DXB 17289",
+  "KB0296":"DXB 17307",
+  "KB0297":"DXB 17195",
+  "KB0298":"DXB 17310",
+  "KB0299":"DXB 17321",
+  "KB0300":"DXB 17324",
+  "KB0301":"DXB 17334",
+  "KB0302":"DXB 17370",
+  "KB0303":"DXB 17372",
+  "KB0304":"DXB 17280",
+  "KB0305":"DXB 17384",
+  "KB0306":"DXB 17388",
+  "KB0307":"DXB 17391",
+  "KB0308":"DXB 17397",
+  "KB0309":"DXB 17400",
+  "KB0310":"DXB 17414",
+  "KB0311":"DXB 17405",
+  "KB0312":"DXB 17410",
+  "KB0313":"DXB 17412",
+  "KB0314":"DXB 17418",
+  "KB0315":"DXB 17421",
+  "KB0316":"DXB 17427",
+  "KB0317":"DXB 17429",
+  "KB0318":"DXB 17436",
+  "KB0319":"DXB 17440",
+  "KB0320":"DXB 17443",
+  "KB0321":"DXB 17447",
+  "KB0322":"DXB 17450",
+  "KB0323":"DXB 17451",
+  "KB0324":"DXB 4413",
+  "KB0325":"DXB 17459",
+  "KB0326":"DXB 17462",
+  "KB0327":"DXB 17467",
+  "KB0328":"DXB 21626",
+  "KB0329":"DXB 21621",
+  "KB0330":"DXB 21625",
+  "KB0331":"DXB 21599",
+  "KB0332":"DXB 17471",
+  "KB0333":"DXB 21590",
+  "KB0334":"DXB 21601",
+  "KB0335":"DXB 17474",
+  "KB0336":"DXB 21592",
+  "KB0337":"DXB 21629",
+  "KB0338":"DXB 21603",
+  "KB0339":"DXB 21607",
+  "KB0340":"DXB 21608",
+  "KB0341":"DXB 21602",
+  "KB0342":"DXB 17482",
+  "KB0343":"DXB 17485",
+  "KB0344":"DXB 17489",
+  "KB0345":"DXB 17491",
+  "KB0346":"DXB 17493",
+  "KB0347":"DXB 21502",
+  "KB0348":"DXB 21505",
+  "KB0349":"DXB 21507",
+  "KB0350":"DXB 21509",
+  "KB0351":"DXB 21514",
+  "KB0352":"DXB 21518",
+  "KB0353":"DXB 21521",
+  "KB0354":"DXB 21527",
+  "KB0355":"DXB 21523",
+  "KB0356":"DXB 21525",
+  "KB0357":"DXB 21529",
+  "KB0358":"DXB 21535",
+  "KB0359":"DXB 21539",
+  "KB0360":"DXB 21541",
+  "KB0361":"DXB 21544",
+  "KB0362":"DXB 21552",
+  "KB0363":"DXB 21553",
+  "KB0364":"DXB 21559",
+  "KB0365":"DXB 21567",
+  "KB0366":"DXB 21570",
+  "KB0367":"DXB 21574",
+  "KB0368":"DXB 21581",
+  "KB0369":"DXB 21584",
+  "KB0370":"DXB 21632",
+  "KB0371":"DXB 21634",
+  "KB0372":"DXB 21638",
+  "KB0373":"DXB 21641",
+  "KB0374":"DXB 21650",
+  "KB0375":"DXB 21651",
+  "KB0376":"DXB 21749",
+  "KB0377":"DXB 21658",
+  "KB0378":"DXB 21661",
+  "KB0379":"DXB 21664",
+  "KB0380":"DXB 21670",
+  "KB0381":"DXB 21673",
+  "KB0382":"DXB 21676",
+  "KB0383":"DXB 21682",
+  "KB0384":"DXB 21688",
+  "KB0385":"DXB 21689",
+  "KB0386":"DXB 21690",
+  "KB0387":"DXB 21692",
+  "KB0388":"DXB 21703",
+  "KB0389":"DXB 21711",
+  "KB0390":"DXB 21714",
+  "KB0391":"DXB 21717",
+  "KB0392":"DXB 21727",
+  "KB0393":"DXB 21738",
+  "KB0394":"DXB 21739",
+  "KB0395":"DXB 21740",
+  "KB0396":"DXB 21742",
+  "KB0397":"DXB 21758",
+  "KB0398":"DXB 21760",
+  "KB0399":"DXB 21752",
+  "KB0400":"DXB 21763",
+  "KB0401":"DXB 21771",
+  "KB0402":"DXB 21775",
+  "KB0403":"DXB 21782",
+  "KB0404":"DXB 21783",
+  "KB0405":"DXB 21791",
+  "KB0406":"DXB 21802",
+  "KB0407":"DXB 21804",
+  "KB0408":"DXB 21816",
+  "KB0409":"DXB 21824",
+  "KB0410":"DXB 21825",
+  "KB0411":"DXB 21830",
+  "KB0412":"DXB 21834",
+  "KB0413":"DXB 21835",
+  "KB0414":"DXB 21836",
+  "KB0415":"DXB 21842",
+  "KB0416":"DXB 21846",
+  "KB0417":"DXB 21847",
+  "KB0418":"DXB 80205",
+  "KB0419":"DXB 21854",
+  "KB0420":"DXB 21860",
+  "KB0421":"DXB 21861",
+  "KB0422":"DXB 21869",
+  "KB0423":"DXB 21870",
+  "KB0424":"DXB 21872",
+  "KB0425":"DXB 21874",
+  "KB0426":"DXB 21891",
+  "KB0427":"DXB 21897",
+  "KB0428":"DXB 21898",
+  "KB0429":"DXB 21904",
+  "KB0430":"DXB 21906",
+  "KB0431":"DXB 21909",
+  "KB0432":"DXB 21911",
+  "KB0433":"DXB 21930",
+  "KB0434":"DXB 21934",
+  "KB0435":"DXB 21940",
+  "KB0436":"DXB 21946",
+  "KB0437":"DXB 21955",
+  "KB0438":"DXB 21958",
+  "KB0439":"DXB 21960",
+  "KB0440":"DXB 21969",
+  "KB0441":"DXB 21970",
+  "KB0442":"DXB 21972",
+  "KB0443":"DXB 21973",
+  "KB0444":"DXB 21985",
+  "KB0445":"DXB 21986",
+  "KB0446":"DXB 21987",
+  "KB0447":"DXB 21989",
+  "KB0448":"DXB 21993",
+  "KB0449":"DXB 21995",
+  "KB0450":"DXB 21998",
+  "KB0451":"DXB 25002",
+  "KB0452":"DXB 25004",
+  "KB0453":"DXB 25005",
+  "KB0454":"DXB 25006",
+  "KB0455":"DXB 25014",
+  "KB0456":"DXB 25020",
+  "KB0457":"DXB 25023",
+  "KB0458":"DXB 25024",
+  "KB0459":"DXB 25027",
+  "KB0460":"DXB 25030",
+  "KB0461":"DXB 25032",
+  "KB0462":"DXB 2862",
+  "KB0463":"DXB 25038",
+  "KB0464":"DXB 25044",
+  "KB0465":"DXB 25046",
+  "KB0466":"DXB 17456",
+  "KB0467":"DXB 25111",
+  "KB0468":"DXB 25119",
+  "KB0469":"DXB 25123",
+  "KB0470":"DXB 25126",
+  "KB0471":"DXB 25128",
+  "KB0472":"DXB 25138",
+  "KB0473":"DXB 25148",
+  "KB0474":"DXB 25151",
+  "KB0475":"DXB 25152",
+  "KB0476":"DXB 25157",
+  "KB0477":"DXB 25160",
+  "KB0478":"DXB 25166",
+  "KB0479":"DXB 25168",
+  "KB0480":"DXB 25171",
+  "KB0481":"DXB 25051",
+  "KB0482":"DXB 25053",
+  "KB0483":"DXB 25059",
+  "KB0484":"DXB 25062",
+  "KB0485":"DXB 25071",
+  "KB0486":"DXB 25074",
+  "KB0487":"DXB 25075",
+  "KB0488":"DXB 25076",
+  "KB0489":"DXB 80306",
+  "KB0490":"DXB 25085",
+  "KB0491":"DXB 25088",
+  "KB0492":"DXB 25091",
+  "KB0493":"DXB 25092",
+  "KB0494":"DXB 25095",
+  "KB0495":"DXB 25097",
+  "KB0496":"DXB 25172",
+  "KB0497":"DXB 25176",
+  "KB0498":"DXB 25177",
+  "KB0499":"DXB 25183",
+  "KB0500":"DXB 25186",
+  "KB0501":"DXB 25195",
+  "KB0502":"DXB 25200",
+  "KB0503":"DXB 25207",
+  "KB0504":"DXB 25213",
+  "KB0505":"DXB 25221",
+  "KB0506":"DXB 25224",
+  "KB0507":"DXB 25225",
+  "KB0508":"DXB 25227",
+  "KB0509":"DXB 25228",
+  "KB0510":"DXB 25232",
+  "KB0511":"DXB 25233",
+  "KB0512":"DXB 25236",
+  "KB0513":"DXB 25244",
+  "KB0514":"DXB 25247",
+  "KB0515":"DXB 25250",
+  "KB0516":"DXB 25251",
+  "KB0517":"DXB 25259",
+  "KB0518":"DXB 25262",
+  "KB0519":"DXB 25263",
+  "KB0520":"DXB 25269",
+  "KB0521":"DXB 25275",
+  "KB0522":"DXB 25282",
+  "KB0523":"DXB 25285",
+  "KB0524":"DXB 25289",
+  "KB0525":"DXB 25290",
+  "KB0526":"DXB 25291",
+  "KB0527":"DXB 25298",
+  "KB0528":"DXB 25311",
+  "KB0529":"DXB 25316",
+  "KB0530":"DXB 25334",
+  "KB0531":"DXB 25340",
+  "KB0532":"DXB 25362",
+  "KB0533":"DXB 25405",
+  "KB0534":"DXB 25368",
+  "KB0535":"DXB 78237",
+  "KB0536":"DXB 25375",
+  "KB0537":"DXB 25383",
+  "KB0538":"DXB 25390",
+  "KB0539":"DXB 25391",
+  "KB0540":"DXB 25398",
+  "KB0541":"DXB 25399",
+  "KB0542":"DXB 25400",
+  "KB0543":"DXB 25403",
+  "KB0544":"DXB 25406",
+  "KB0545":"DXB 25408",
+  "KB0546":"DXB 17389",
+  "KB0547":"DXB 7200",
+  "KB0548":"DXB 17016",
+  "KB0549":"DXB 76130",
+  "KB0550":"DXB 1216",
+  "KB0551":"DXB 4195",
+  "KB0552":"DXB 76451",
+  "KB0553":"DXB 76459",
+  "KB0554":"DXB 76460",
+  "KB0555":"DXB 76467",
+  "KB0556":"DXB 76480",
+  "KB0557":"DXB 76485",
+  "KB0558":"DXB 76492",
+  "KB0559":"DXB 76498",
+  "KB0560":"DXB 78007",
+  "KB0561":"DXB 78013",
+  "KB0562":"DXB 78015",
+  "KB0563":"DXB 78016",
+  "KB0564":"DXB 78020",
+  "KB0565":"DXB 78028",
+  "KB0566":"DXB 78038",
+  "KB0567":"DXB 78039",
+  "KB0568":"DXB 78041",
+  "KB0569":"DXB 78044",
+  "KB0570":"DXB 78050",
+  "KB0571":"DXB 78055",
+  "KB0572":"DXB 78067",
+  "KB0573":"DXB 78072",
+  "KB0574":"DXB 80475",
+  "KB0575":"DXB 78082",
+  "KB0576":"DXB 78083",
+  "KB0577":"DXB 25108",
+  "KB0578":"DXB 78090",
+  "KB0579":"DXB 78093",
+  "KB0580":"DXB 48440",
+  "KB0581":"DXB 78099",
+  "KB0582":"DXB 78103",
+  "KB0583":"DXB 78109",
+  "KB0584":"DXB 78111",
+  "KB0585":"DXB 78112",
+  "KB0586":"DXB 78114",
+  "KB0587":"DXB 78119",
+  "KB0588":"DXB 78120",
+  "KB0589":"DXB 78129",
+  "KB0590":"DXB 78130",
+  "KB0591":"DXB 78137",
+  "KB0592":"DXB 78142",
+  "KB0593":"DXB 78146",
+  "KB0594":"DXB 78147",
+  "KB0595":"DXB 78148",
+  "KB0596":"DXB 78149",
+  "KB0597":"DXB 78151",
+  "KB0598":"DXB 78157",
+  "KB0599":"DXB 78160",
+  "KB0600":"DXB 78162",
+  "KB0601":"DXB 78164",
+  "KB0602":"DXB 78167",
+  "KB0603":"DXB 78220",
+  "KB0604":"DXB 78226",
+  "KB0605":"DXB 78228",
+  "KB0606":"DXB 78231",
+  "KB0607":"DXB 78232",
+  "KB0608":"DXB 21859",
+  "KB0609":"DXB 78244",
+  "KB0610":"DXB 78245",
+  "KB0611":"DXB 78246",
+  "KB0612":"DXB 78251",
+  "KB0613":"DXB 78255",
+  "KB0614":"DXB 78261",
+  "KB0615":"DXB 25081",
+  "KB0616":"DXB 78420",
+  "KB0617":"DXB 78425",
+  "KB0618":"DXB 21850",
+  "KB0619":"DXB 78419",
+  "KB0620":"DXB 78403",
+  "KB0621":"DXB 78401",
+  "KB0622":"DXB 78300",
+  "KB0623":"DXB 78302",
+  "KB0624":"DXB 78316",
+  "KB0625":"DXB 78325",
+  "KB0626":"DXB 78328",
+  "KB0627":"DXB 80323",
+  "KB0628":"DXB 78343",
+  "KB0629":"DXB 78346",
+  "KB0630":"DXB 78358",
+  "KB0631":"DXB 78370",
+  "KB0632":"DXB 78371",
+  "KB0633":"DXB 78390",
+  "KB0634":"DXB 78392",
+  "KB0635":"DXB 78393",
+  "KB0636":"DXB 78398",
+  "KB0637":"DXB 78468",
+  "KB0638":"DXB 78467",
+  "KB0639":"DXB 78465",
+  "KB0640":"DXB 78485",
+  "KB0641":"DXB 78463",
+  "KB0642":"DXB 78456",
+  "KB0643":"DXB 78471",
+  "KB0644":"DXB 78457",
+  "KB0645":"DXB 80177",
+  "KB0646":"DXB 4371",
+  "KB0647":"DXB 4350",
+  "KB0648":"DXB 78265",
+  "KB0649":"DXB 78299",
+  "KB0650":"DXB 78267",
+  "KB0651":"DXB 80179",
+  "KB0652":"DXB 78097",
+  "KB0653":"DXB 78263",
+  "KB0654":"DXB 78278",
+  "KB0655":"DXB 80180",
+  "KB0656":"DXB 78270",
+  "KB0657":"DXB 78282",
+  "KB0658":"DXB 48082",
+  "KB0659":"DXB 78388",
+  "KB0660":"DXB 78449",
+  "KB0661":"DXB 21666",
+  "KB0662":"DXB 7335",
+  "KB0663":"DXB 17116",
+  "KB0664":"DXB 21643",
+  "KB0665":"DXB 78458",
+  "KB0666":"DXB 66230",
+  "KB0667":"DXB 80176",
+  "KB0668":"DXB 66407",
+  "KB0669":"DXB 48569",
+  "KB0670":"DXB 78472",
+  "KB0671":"DXB 1393",
+  "KB0672":"DXB 78443",
+  "KB0673":"DXB 80096",
+  "KB0674":"DXB 80246",
+  "KB0675":"DXB 80244",
+  "KB0676":"DXB 80188",
+  "KB0677":"DXB 80241",
+  "KB0678":"DXB 80273",
+  "KB0679":"DXB 80185",
+  "KB0680":"DXB 80269",
+  "KB0681":"DXB 80259",
+  "KB0682":"DXB 80255",
+  "KB0683":"DXB 80254",
+  "KB0684":"DXB 80247",
+  "KB0685":"DXB 80240",
+  "KB0686":"DXB 80234",
+  "KB0687":"DXB 80229",
+  "KB0688":"DXB 80219",
+  "KB0689":"DXB 80210",
+  "KB0690":"DXB 80209",
+  "KB0691":"DXB 80206",
+  "KB0692":"DXB 80479",
+  "KB0693":"DXB 80192",
+  "KB0694":"DXB 78078",
+  "KB0695":"DXB 80301",
+  "KB0696":"DXB 80294",
+  "KB0697":"DXB 80290",
+  "KB0698":"DXB 80289",
+  "KB0699":"DXB 80279",
+  "KB0700":"DXB 5969",
+  "KB0701":"DXB 80459",
+  "KB0702":"DXB 80307",
+  "KB0703":"DXB 80392",
+  "KB0704":"DXB 80456",
+  "KB0705":"DXB 80450",
+  "KB0706":"DXB 80366",
+  "KB0707":"DXB 80394",
+  "KB0708":"DXB 80387",
+  "KB0709":"DXB 80358",
+  "KB0710":"DXB 80440",
+  "KB0711":"DXB 48442",
+  "KB0712":"DXB 80330",
+  "KB0713":"DXB 80337",
+  "KB0714":"DXB 80325",
+  "KB0715":"DXB 80357",
+  "KB0716":"DXB 80346",
+  "KB0717":"DXB 80480",
+  "KB0718":"DXB 80381",
+  "KB0719":"DXB 80374",
+  "KB0720":"DXB 80372",
+  "KB0721":"DXB 80316",
+  "KB0722":"DXB 80314",
+  "KB0723":"DXB 80379",
+  "KB0724":"DXB 80454",
+  "KB0725":"DXB 80399",
+  "KB0726":"DXB 80401",
+  "KB0727":"DXB 80439",
+  "KB0728":"DXB 80482",
+  "KB0729":"DXB 80432",
+  "KB0730":"DXB 80413",
+  "KB0731":"DXB 80431",
+  "KB0732":"DXB 80433",
+  "KB0733":"DXB 4381",
+  "KB0734":"DXB 80484",
+  "KB0735":"DXB 4379",
+  "KB0736":"DXB 4386",
+  "KB0737":"DXB 66006",
+  "KB0738":"DXB 4378",
+  "KB0739":"DXB 4382",
+  "KB0740":"DXB 4361",
+  "KB0741":"DXB 80500",
+  "KB0742":"DXB 4363",
+  "KB0743":"DXB 80495",
+  "KB0744":"DXB 66002",
+  "KB0745":"DXB 80483",
+  "KB0746":"DXB 80499",
+  "KB0747":"DXB 4402",
+  "KB0748":"DXB 4408",
+  "KB0749":"DXB 80488",
+  "KB0750":"DXB 80498",
+  "KB0751":"DXB 66009",
+  "KB0752":"DXB 4362",
+  "KB0753":"DXB 25369",
+  "KB0754":"DXB 80266",
+  "KB0755":"DXB 1000",
+  "KB0756":"DXB 1501",
+  "KB0757":"DXB 1502",
+  "KB0758":"DXB 1503",
+  "KB0759":"DXB 1504",
+  "KB0760":"DXB 1505",
+  "KB0761":"DXB 1506",
+  "KB0762":"DXB 1507",
+  "KB0763":"DXB 1508",
+  "KB0764":"DXB 1509",
+  "KB0765":"DXB 1510",
+  "KB0766":"DXB 1511",
+  "KB0767":"DXB 1512",
+  "KB0768":"DXB 1513",
+  "KB0769":"DXB 1514",
+  "KB0770":"DXB 1515",
+  "KB0771":"DXB 1516",
+  "KB0772":"DXB 1517",
+  "KB0773":"DXB 1518",
+  "KB0774":"DXB 1519",
+  "KB0775":"DXB 1520",
+  "KB0776":"DXB 1521",
+  "KB0777":"DXB 1522",
+  "KB0778":"DXB 1523",
+  "KB0779":"DXB 1524",
+  "KB0780":"DXB 1525",
+  "KB0781":"DXB 1526",
+  "KB0782":"DXB 1527",
+  "KB0783":"DXB 1528",
+  "KB0784":"DXB 1529",
+  "KB0785":"DXB 1530",
+  "KB0786":"DXB 1531",
+  "KB0787":"DXB 1532",
+  "KB0788":"DXB 1533",
+  "KB0789":"DXB 7433",
+  "KB0790":"DXB 80251",
+  "KB0791":"DXB 5754",
+  "KB0792":"DXB 17380",
+  "KB0793":"DXB 48112",
+  "KB0794":"DXB 25184",
+  "KB0795":"DXB 5998",
+  "KB0796":"DXB 4014",
+  "KB0797":"DXB 78024",
+  "KB0798":"DXB 48760",
+  "KB0799":"DXB 25455",
+  "KB0800":"DXB 21918",
+  "KB0801":"DXB 48517",
+  "KB0802":"DXB 7304",
+  "KB0803":"DXB 25300",
+  "KB0804":"DXB 1534",
+  "KB0805":"DXB 1535",
+  "KB0806":"DXB 1536",
+  "KB0807":"DXB 1537",
+  "KB0808":"DXB 1538",
+  "KB0809":"DXB 1539",
+  "KB0810":"DXB 1540",
+  "KB0811":"DXB 1541",
+  "KB0812":"DXB 1542",
+  "KB0813":"DXB 1543",
+  "KB0814":"DXB 1544",
+  "KB0815":"DXB 1545",
+  "KB0816":"DXB 1546",
+  "KB0817":"DXB 1547",
+  "KB0818":"DXB 1548",
+  "KB0819":"DXB 1549",
+  "KB0820":"DXB 1550",
+  "KB0821":"DXB 1551",
+  "KB0822":"DXB 1552",
+  "KB0823":"DXB 1553",
+  "KB0824":"DXB 1554",
+  "KB0825":"DXB 1555",
+  "KB0826":"DXB 1556",
+  "KB0827":"DXB 1557",
+  "KB0828":"DXB 1558",
+  "KB0829":"DXB 1559",
+  "KB0830":"DXB 1560",
+  "KB0831":"DXB 1561",
+  "KB0832":"DXB 1562",
+  "KB0833":"DXB 1563",
+  "KB0834":"DXB 1564",
+  "KB0835":"DXB 1565",
+  "KB0836":"DXB 1566",
+  "KB0837":"DXB 1567",
+  "KB0838":"DXB 1568",
+  "KB0839":"DXB 1569",
+  "KB0840":"DXB 1570",
+  "KB0841":"DXB 1571",
+  "KB0842":"DXB 1572",
+  "KB0843":"DXB 1573",
+  "KB0844":"DXB 1574",
+  "KB0845":"DXB 1575",
+  "KB0846":"DXB 1576",
+  "KB0847":"DXB 1577",
+  "KB0848":"DXB 1578",
+  "KB0849":"DXB 1579",
+  "KB0850":"DXB 1580",
+  "KB0851":"DXB 1581",
+  "KB0852":"DXB 1582",
+  "KB0853":"DXB 1583",
+  "KB0854":"DXB 1584",
+  "KB0855":"DXB 1585",
+  "KB0856":"DXB 1586",
+  "KB0857":"DXB 1587",
+  "KB0858":"DXB 1588",
+  "KB0859":"DXB 1589",
+  "KB0860":"DXB 1590",
+  "KB0861":"DXB 1591",
+  "KB0862":"DXB 1592",
+  "KB0863":"DXB 1593",
+  "KB0864":"DXB 1594",
+  "KB0865":"DXB 1595",
+  "KB0866":"DXB 1596",
+  "KB0867":"DXB 1597",
+  "KB0868":"DXB 1598",
+  "KB0869":"DXB 1599",
+  "KB0870":"DXB 1600",
+  "KB0871":"DXB 1601",
+  "KB0872":"DXB 1602",
+  "KB0873":"DXB 1603",
+  "KB0874":"DXB 1604",
+  "KB0875":"DXB 1605",
+  "KB0876":"DXB 1606",
+  "KB0877":"DXB 1607",
+  "KB0878":"DXB 1608",
+  "KB0879":"DXB 1609",
+  "KB0880":"DXB 1610",
+  "KB0881":"DXB 1611",
+  "KB0882":"DXB 1612",
+  "KB0883":"DXB 1613",
+  "KB0884":"DXB 1614",
+  "KB0885":"DXB 1615",
+  "KB0886":"DXB 1616",
+  "KB0887":"DXB 1617",
+  "KB0888":"DXB 1618",
+  "KB0889":"DXB 1619",
+  "KB0890":"DXB 1620",
+  "KB0891":"DXB 1621",
+  "KB0892":"DXB 1622",
+  "KB0893":"DXB 1623",
+  "KB0894":"DXB 1624",
+  "KB0895":"DXB 1625",
+  "KB0896":"DXB 1626",
+  "KB0897":"DXB 1627",
+  "KB0898":"DXB 1628",
+  "KB0899":"DXB 1629",
+  "KB0900":"DXB 1630",
+  "KB0901":"DXB 1631",
+  "KB0902":"DXB 1632",
+  "KB0903":"DXB 1633",
+  "KB0904":"DXB 1634",
+  "KB0905":"DXB 1635",
+  "KB0906":"DXB 1636",
+  "KB0907":"DXB 1637",
+  "KB0908":"DXB 1638",
+  "KB0909":"DXB 1639",
+  "KB0910":"DXB 1640",
+  "KB0911":"DXB 1641",
+  "KB0912":"DXB 1642",
+  "KB0913":"DXB 1643",
+  "KB0914":"DXB 1644",
+  "KB0915":"DXB 1645",
+  "KB0916":"DXB 1646",
+  "KB0917":"DXB 1647",
+  "KB0918":"DXB 1648",
+  "KB0919":"DXB 1649",
+  "KB0920":"DXB 1650",
+  "KB0921":"DXB 1651",
+  "KB0922":"DXB 1652",
+  "KB0923":"DXB 1653",
+  "KB0924":"DXB 1654",
+  "KB0925":"DXB 1655",
+  "KB0926":"DXB 1656",
+  "KB0927":"DXB 1657",
+  "KB0928":"DXB 1658",
+  "KB0929":"DXB 1659",
+  "KB0930":"DXB 1660",
+  "KB0931":"DXB 1661",
+  "KB0932":"DXB 1662",
+  "KB0933":"DXB 1663",
+  "KB0934":"DXB 1664",
+  "KB0935":"DXB 1665",
+  "KB0936":"DXB 1666",
+  "KB0937":"DXB 1667",
+  "KB0938":"DXB 1668",
+  "KB0939":"DXB 1669",
+  "KB0940":"DXB 1670",
+  "KB0941":"DXB 1671",
+  "KB0942":"DXB 1672",
+  "KB0943":"DXB 1673",
+  "KB0944":"DXB 1674",
+  "KB0945":"DXB 1675",
+  "KB0946":"DXB 1676",
+  "KB0947":"DXB 1677",
+  "KB0948":"DXB 1678",
+  "KB0949":"DXB 1679",
+  "KB0950":"DXB 1680",
+  "KB0951":"DXB 1681",
+  "KB0952":"DXB 1682",
+  "KB0953":"DXB 1683",
+  "KB0954":"DXB 1684",
+  "KB0955":"DXB 1685",
+  "KB0956":"DXB 1686",
+  "KB0957":"DXB 1687",
+  "KB0958":"DXB 1688",
+  "KB0959":"DXB 1689",
+  "KB0960":"DXB 1690",
+  "KB0961":"DXB 1691",
+  "KB0962":"DXB 1692",
+  "KB0963":"DXB 1693",
+  "KB0964":"DXB 1694",
+  "KB0965":"DXB 1695",
+  "KB0966":"DXB 1696",
+  "KB0967":"DXB 1697",
+  "KB0968":"DXB 1698",
+  "KB0969":"DXB 1699",
+  "KB0970":"DXB 1700",
+  "KB0971":"DXB 1701",
+  "KB0972":"DXB 1702",
+  "KB0973":"DXB 1703",
+  "KB0974":"DXB 1704",
+  "KB0975":"DXB 1705",
+  "KB0976":"DXB 1706",
+  "KB0977":"DXB 1707",
+  "KB0978":"DXB 1708",
+  "KB0979":"DXB 1709",
+  "KB0980":"DXB 1710",
+  "KB0981":"DXB 1711",
+  "KB0982":"DXB 1712",
+  "KB0983":"DXB 1713",
+  "KB0984":"DXB 1714",
+  "KB0985":"DXB 1715",
+  "KB0986":"DXB 1716",
+  "KB0987":"DXB 1717",
+  "KB0988":"DXB 1718",
+  "KB0989":"DXB 1719",
+  "KB0990":"DXB 1720",
+  "KB0991":"DXB 1721",
+  "KB0992":"DXB 1722",
+  "KB0993":"DXB 1723",
+  "KB0994":"DXB 1724",
+  "KB0995":"DXB 1725",
+  "KB0996":"DXB 1726",
+  "KB0997":"DXB 1727",
+  "KB0998":"DXB 1728",
+  "KB0999":"DXB 1729",
+  "KB1000":"DXB 1730",
+  "KB1001":"DXB 1731",
+  "KB1002":"DXB 1732",
+  "KB1003":"DXB 1733",
+  "KB1004":"DXB 1734",
+  "KB1005":"DXB 1735",
+  "KB1006":"DXB 1736",
+  "KB1007":"DXB 1737",
+  "KB1008":"DXB 1738",
+  "KB1009":"DXB 1739",
+  "KB1010":"DXB 1740",
+  "KB1011":"DXB 1741",
+  "KB1012":"DXB 1742",
+  "KB1013":"DXB 1743",
+  "KB1014":"DXB 1744",
+  "KB1015":"DXB 1745",
+  "KB1016":"DXB 1746",
+  "KB1017":"DXB 1747",
+  "KB1018":"DXB 1748",
+  "KB1019":"DXB 1749",
+  "KB1020":"DXB 1750",
+  "KB1021":"DXB 1751",
+  "KB1022":"DXB 1752",
+  "KB1023":"DXB 1753",
+  "KB1024":"DXB 1754",
+  "KB1025":"DXB 1755",
+  "KB1026":"DXB 1756",
+  "KB1027":"DXB 1757",
+  "KB1028":"DXB 1758",
+  "KB1029":"DXB 1759",
+  "KB1030":"DXB 1760",
+  "KB1031":"DXB 1761",
+  "KB1032":"DXB 1762",
+  "KB1033":"DXB 1763",
+  "KB1034":"DXB 1764",
+  "KB1035":"DXB 1765",
+  "KB1036":"DXB 1766",
+  "KB1037":"DXB 1767",
+  "KB1038":"DXB 1768",
+  "KB1039":"DXB 1769",
+  "KB1040":"DXB 1770",
+  "KB1041":"DXB 1771",
+  "KB1042":"DXB 1772",
+  "KB1043":"DXB 1773",
+  "KB1044":"DXB 1774",
+  "KB1045":"DXB 1775",
+  "KB1046":"DXB 1789",
+  "KB1047":"DXB 1777",
+  "KB1048":"DXB 1778",
+  "KB1049":"DXB 1779",
+  "KB1050":"DXB 1780",
+  "KB1051":"DXB 1781",
+  "KB1052":"DXB 1782",
+  "KB1053":"DXB 1783",
+  "KB1054":"DXB 1784",
+  "KB1055":"DXB 1785",
+  "KB1056":"DXB 1786",
+  "KB1057":"DXB 1787",
+  "KB1058":"DXB 1788",
+  "KB1059":"DXB 1776",
+  "KB1060":"DXB 1790",
+  "KB1061":"DXB 1791",
+  "KB1062":"DXB 1792",
+  "KB1063":"DXB 1793",
+  "KB1064":"DXB 1794",
+  "KB1065":"DXB 1795",
+  "KB1066":"DXB 1796",
+  "KB1067":"DXB 1797",
+  "KB1068":"DXB 1798",
+  "KB1069":"DXB 1799",
+  "KB1070":"DXB 1800",
+  "KB1071":"DXB 1801",
+  "KB1072":"DXB 1802",
+  "KB1073":"DXB 1803",
+  "KB1074":"DXB 1804",
+  "KB1075":"DXB 1805",
+  "KB1076":"DXB 1806",
+  "KB1077":"DXB 1807",
+  "KB1078":"DXB 1808",
+  "KB1079":"DXB 1809",
+  "KB1080":"DXB 1810",
+  "KB1081":"DXB 1811",
+  "KB1082":"DXB 1812",
+  "KB1083":"DXB 1813",
+  "KB1084":"DXB 1814",
+  "KB1085":"DXB 1815",
+  "KB1086":"DXB 1816",
+  "KB1087":"DXB 1817",
+  "KB1088":"DXB 1818",
+  "KB1089":"DXB 1819",
+  "KB1090":"DXB 1820",
+  "KB1091":"DXB 1821",
+  "KB1092":"DXB 1822",
+  "KB1093":"DXB 1823",
+  "KB1094":"DXB 1824",
+  "KB1095":"DXB 1825",
+  "KB1096":"DXB 1826",
+  "KB1097":"DXB 1827",
+  "KB1098":"DXB 1828",
+  "KB1099":"DXB 1829",
+  "KB1100":"DXB 1830",
+  "KB1101":"DXB 1831",
+  "KB1102":"DXB 1832",
+  "KB1103":"DXB 1833",
+  "KB1104":"DXB 1834",
+  "KB1105":"DXB 1835",
+  "KB1106":"DXB 1836",
+  "KB1107":"DXB 1837",
+  "KB1108":"DXB 1838",
+  "KB1109":"DXB 1839",
+  "KB1110":"DXB 1840",
+  "KB1111":"DXB 1841",
+  "KB1112":"DXB 1842",
+  "KB1113":"DXB 1843",
+  "KB1114":"DXB 1844",
+  "KB1115":"DXB 1845",
+  "KB1116":"DXB 1846",
+  "KB1117":"DXB 1847",
+  "KB1118":"DXB 1848",
+  "KB1119":"DXB 1849",
+  "KB1120":"DXB 1850",
+  "KB1121":"DXB 1851",
+  "KB1122":"DXB 1852",
+  "KB1123":"DXB 1853",
+  "KB1124":"DXB 1854",
+  "KB1125":"DXB 1855",
+  "KB1126":"DXB 1856",
+  "KB1127":"DXB 1857",
+  "KB1128":"DXB 1858",
+  "KB1129":"DXB 1859",
+  "KB1130":"dxb 1860",
+  "KB1131":"DXB 1861",
+  "KB1132":"DXB 1862",
+  "KB1133":"DXB 1863",
+  "KB1134":"DXB 1864",
+  "KB1135":"DXB 1865",
+  "KB1136":"DXB 1866",
+  "KB1137":"DXB 1867",
+  "KB1138":"DXB 1868",
+  "KB1139":"DXB 1869",
+  "KB1140":"DXB 1870",
+  "KB1141":"DXB 1871",
+  "KB1142":"DXB 1872",
+  "KB1143":"DXB 1873",
+  "KB1144":"DXB 1874",
+  "KB1145":"DXB 1875",
+  "KB1146":"DXB 1876",
+  "KB1147":"DXB 1877",
+  "KB1148":"DXB 1878",
+  "KB1149":"DXB 1879",
+  "KB1150":"DXB 1880",
+  "KB1151":"DXB 1881",
+  "KB1152":"DXB 1882",
+  "KB1153":"DXB 1883",
+  "KB1154":"DXB 1884",
+  "KB1155":"DXB 1903",
+  "KB1156":"DXB 1904",
+  "KB1157":"DXB 1905",
+  "KB1158":"DXB 1906",
+  "KB1159":"DXB 1907",
+  "KB1160":"DXB 1908",
+  "KB1161":"DXB 1909",
+  "KB1162":"DXB 1910",
+  "KB1163":"DXB 1911",
+  "KB1164":"DXB 1912",
+  "KB1165":"DXB 1913",
+  "KB1166":"DXB 1914",
+  "KB1167":"DXB 1915",
+  "KB1168":"DXB 1916",
+  "KB1169":"DXB 1917",
+  "KB1170":"DXB 1918",
+  "KB1171":"DXB 1919",
+  "KB1172":"DXB 1920",
+  "KB1173":"DXB 1921",
+  "KB1174":"DXB 1922",
+  "KB1175":"DXB 1923",
+  "KB1176":"DXB 1924",
+  "KB1177":"DXB 1925",
+  "KB1178":"DXB 1926",
+  "KB1179":"DXB 1927",
+  "KB1180":"DXB 1928",
+  "KB1181":"DXB 1929",
+  "KB1182":"DXB 1930",
+  "KB1183":"DXB 1931",
+  "KB1184":"DXB 1932",
+  "KB1185":"DXB 1933",
+  "KB1186":"DXB 1934",
+  "KB1187":"DXB 1935",
+  "KB1188":"DXB 1936",
+  "KB1189":"DXB 1937",
+  "KB1190":"DXB 1938",
+  "KB1191":"DXB 1939",
+  "KB1192":"DXB 1940",
+  "KB1193":"DXB 1941",
+  "KB1194":"DXB 1942",
+  "KB1195":"DXB 1943",
+  "KB1196":"DXB 1944",
+  "KB1197":"DXB 1945",
+  "KB1198":"DXB 1946",
+  "KB1199":"DXB 1947",
+  "KB1200":"DXB 1948",
+  "KB1201":"DXB 1949",
+  "KB1202":"DXB 1950",
+  "KB1203":"DXB 1951",
+  "KB1204":"DXB 1952",
+  "KB1205":"DXB 1953",
+  "KB1206":"DXB 1954",
+  "KB1207":"DXB 1955",
+  "KB1208":"DXB 1956",
+  "KB1209":"DXB 1957",
+  "KB1210":"DXB 1958",
+  "KB1211":"DXB 1959",
+  "KB1212":"DXB 1960",
+  "KB1213":"DXB 1961",
+  "KB1214":"DXB 1962",
+  "KB1215":"DXB 1963",
+  "KB1216":"DXB 1964",
+  "KB1217":"DXB 1965",
+  "KB1218":"DXB 1966",
+  "KB1219":"DXB 1967",
+  "KB1220":"DXB 1968",
+  "KB1221":"DXB 1969",
+  "KB1222":"DXB 1970",
+  "KB1223":"DXB 1971",
+  "KB1224":"DXB 1972",
+  "KB1225":"DXB 1973",
+  "KB1226":"DXB 1974",
+  "KB1227":"DXB 1975",
+  "KB1228":"DXB 1976",
+  "KB1229":"DXB 1977",
+  "KB1230":"DXB 1978",
+  "KB1231":"DXB 1979",
+  "KB1232":"DXB 1980",
+  "KB1233":"DXB 1981",
+  "KB1234":"DXB 1982",
+  "KB1235":"DXB 1983",
+  "KB1236":"DXB 1984",
+  "KB1237":"DXB 1985",
+  "KB1238":"DXB 1986",
+  "KB1239":"DXB 1987",
+  "KB1240":"DXB 1988",
+  "KB1241":"DXB 1989",
+  "KB1242":"DXB 1990",
+  "KB1243":"DXB 1991",
+  "KB1244":"DXB 1992",
+  "KB1245":"DXB 1993",
+  "KB1246":"DXB 1994",
+  "KB1247":"DXB 1995",
+  "KB1248":"DXB 1996",
+  "KB1249":"DXB 1997",
+  "KB1250":"DXB 1998",
+  "KB1251":"DXB 1999",
+  "KB1252":"DXB 2000",
+  "KB1253":"DXB 2001",
+  "KB1254":"DXB 2002",
+  "KB1255":"DXB 2003",
+  "KB1256":"DXB 2004",
+  "KB1257":"DXB 2005",
+  "KB1258":"DXB 2006",
+  "KB1259":"DXB 2007",
+  "KB1260":"DXB 2008",
+  "KB1261":"DXB 2009",
+  "KB1262":"DXB 2010",
+  "KB1263":"DXB 2011",
+  "KB1264":"DXB 2012",
+  "KB1265":"DXB 2013",
+  "KB1266":"DXB 2014",
+  "KB1267":"DXB 2015",
+  "KB1268":"DXB 2016",
+  "KB1269":"DXB 2017",
+  "KB1270":"DXB 2018",
+  "KB1271":"DXB 2019",
+  "KB1272":"DXB 2020",
+  "KB1273":"DXB 2021",
+  "KB1274":"DXB 2022",
+  "KB1275":"DXB 2023",
+  "KB1276":"DXB 2024",
+  "KB1277":"DXB 2025",
+  "KB1278":"DXB 2026",
+  "KB1279":"DXB 2027",
+  "KB1280":"DXB 2028",
+  "KB1281":"DXB 2029",
+  "KB1282":"DXB 2030",
+  "KB1283":"DXB 2031",
+  "KB1284":"DXB 2032",
+  "KB1285":"DXB 2033",
+  "KB1286":"DXB 2034",
+  "KB1287":"DXB 2035",
+  "KB1288":"DXB 2036",
+  "KB1289":"DXB 2037",
+  "KB1290":"DXB 2038",
+  "KB1291":"DXB 2039",
+  "KB1292":"DXB 2040",
+  "KB1293":"DXB 2041",
+  "KB1294":"DXB 2042",
+  "KB1295":"DXB 2043",
+  "KB1296":"DXB 2044",
+  "KB1297":"DXB 2045",
+  "KB1298":"DXB 2046",
+  "KB1299":"DXB 2047",
+  "KB1300":"DXB 3021",
+  "KB1301":"DXB 3022",
+  "KB1302":"DXB 3023",
+  "KB1303":"DXB 3024",
+  "KB1304":"DXB 3025",
+  "KB1305":"DXB 3026",
+  "KB1306":"DXB 3027",
+  "KB1307":"DXB 3028",
+  "KB1308":"DXB 3029",
+  "KB1309":"DXB 3030",
+  "KB1310":"DXB 3031",
+  "KB1311":"DXB 3032",
+  "KB1312":"DXB 3033",
+  "KB1313":"DXB 3034",
+  "KB1314":"DXB 3035",
+  "KB1315":"DXB 3036",
+  "KB1316":"DXB 3037",
+  "KB1317":"DXB 3038",
+  "KB1318":"DXB 3039",
+  "KB1319":"DXB 3040",
+  "KB1320":"DXB 3041",
+  "KB1321":"DXB 3042",
+  "KB1322":"DXB 3043",
+  "KB1323":"DXB 3044",
+  "KB1324":"DXB 3045",
+  "KB1325":"DXB 3046",
+  "KB1326":"DXB 3047",
+  "KB1327":"DXB 3048",
+  "KB1328":"DXB 3049",
+  "KB1329":"DXB 3050",
+  "KB1330":"DXB 3051",
+  "KB1331":"DXB 3052",
+  "KB1332":"DXB 3053",
+  "KB1333":"DXB 3054",
+  "KB1334":"DXB 3055",
+  "KB1335":"DXB 3056",
+  "KB1336":"DXB 3057",
+  "KB1337":"DXB 3058",
+  "KB1338":"DXB 3059",
+  "KB1339":"DXB 3060",
+  "KB1340":"DXB 3061",
+  "KB1341":"DXB 3062",
+  "KB1342":"DXB 3063",
+  "KB1343":"DXB 3064",
+  "KB1344":"DXB 3065",
+  "KB1345":"DXB 3066",
+  "KB1346":"DXB 3067",
+  "KB1347":"DXB 3068",
+  "KB1348":"DXB 3069",
+  "KB1349":"DXB 3070",
+  "KB1350":"DXB 3071",
+  "KB1351":"DXB 3072",
+  "KB1352":"DXB 3073",
+  "KB1353":"DXB 3074",
+  "KB1354":"DXB 3075",
+  "KB1355":"DXB 3076",
+  "KB1356":"DXB 3077",
+  "KB1357":"DXB 3078",
+  "KB1358":"DXB 3079",
+  "KB1359":"DXB 3080",
+  "KB1360":"DXB 3081",
+  "KB1361":"DXB 3082",
+  "KB1362":"DXB 3083",
+  "KB1363":"DXB 3084",
+  "KB1364":"DXB 3085",
+  "KB1365":"DXB 3086",
+  "KB1366":"DXB 3087",
+  "KB1367":"DXB 3088",
+  "KB1368":"DXB 3089",
+  "KB1369":"DXB 3090",
+  "KB1370":"DXB 3091",
+  "KB1371":"DXB 3092",
+  "KB1372":"DXB 3093",
+  "KB1373":"DXB 3094",
+  "KB1374":"DXB 3095",
+  "KB1375":"DXB 3096",
+  "KB1376":"DXB 3097",
+  "KB1377":"DXB 3098",
+  "KB1378":"DXB 3099",
+  "KB1379":"DXB 3100",
+  "KB1380":"DXB 3101",
+  "KB1381":"DXB 3102",
+  "KB1382":"DXB 3103",
+  "KB1383":"DXB 3104",
+  "KB1384":"DXB 3105",
+  "KB1385":"DXB 3106",
+  "KB1386":"DXB 3107",
+  "KB1387":"DXB 3108",
+  "KB1388":"DXB 3109",
+  "KB1389":"DXB 3110",
+  "KB1390":"DXB 3111",
+  "KB1391":"DXB 3112",
+  "KB1392":"DXB 3113",
+  "KB1393":"DXB 3114",
+  "KB1394":"DXB 3115",
+  "KB1395":"DXB 3116",
+  "KB1396":"DXB 3117",
+  "KB1397":"DXB 3118",
+  "KB1398":"DXB 3119",
+  "KB1399":"DXB 3120",
+  "KB1400":"DXB 3121",
+  "KB1401":"DXB 3122",
+  "KB1402":"DXB 3123",
+  "KB1403":"DXB 3124",
+  "KB1404":"DXB 3125",
+  "KB1405":"DXB 3126",
+  "KB1406":"DXB 3127",
+  "KB1407":"DXB 3128",
+  "KB1408":"DXB 3129",
+  "KB1409":"DXB 3130",
+  "KB1410":"DXB 3131",
+  "KB1411":"DXB 3132",
+  "KB1412":"DXB 3133",
+  "KB1413":"DXB 3134",
+  "KB1414":"DXB 3135",
+  "KB1415":"DXB 3136",
+  "KB1416":"DXB 3137",
+  "KB1417":"DXB 3138",
+  "KB1418":"DXB 3139",
+  "KB1419":"DXB 3140",
+  "KB1420":"DXB 3141",
+  "KB1421":"DXB 3142",
+  "KB1422":"DXB 3143",
+  "KB1423":"DXB 3144",
+  "KB1424":"DXB 3145",
+  "KB1425":"DXB 3146",
+  "KB1426":"DXB 3147",
+  "KB1427":"DXB 3148",
+  "KB1428":"DXB 3149",
+  "KB1429":"DXB 3150",
+  "KB1430":"DXB 3151",
+  "KB1431":"DXB 3152",
+  "KB1432":"DXB 3153",
+  "KB1433":"DXB 3154",
+  "KB1434":"DXB 3155",
+  "KB1435":"DXB 3156",
+  "KB1436":"DXB 3157",
+  "KB1437":"DXB 3158",
+  "KB1438":"DXB 3159",
+  "KB1439":"DXB 3160",
+  "KB1440":"DXB 3161",
+  "KB1441":"DXB 3162",
+  "KB1442":"DXB 3163",
+  "KB1443":"DXB 3164",
+  "KB1444":"DXB 3165",
+  "KB1445":"DXB 3166",
+  "KB1446":"DXB 3167",
+  "KB1447":"DXB 3168",
+  "KB1448":"DXB 3169",
+  "KB1449":"DXB 3170",
+  "KB1450":"DXB 3171",
+  "KB1451":"DXB 3172",
+  "KB1452":"DXB 3173",
+  "KB1453":"DXB 3174",
+  "KB1454":"DXB 3175",
+  "KB1455":"DXB 3178",
+  "KB1456":"DXB 3179",
+  "KB1457":"DXB 3180",
+  "KB1458":"DXB 3181",
+  "KB1459":"DXB 3182",
+  "KB1460":"DXB 3183",
+  "KB1461":"DXB 3184",
+  "KB1462":"DXB 3185",
+  "KB1463":"DXB 3186",
+  "KB1464":"DXB 3187",
+  "KB1465":"DXB 3188",
+  "KB1466":"DXB 3189",
+  "KB1467":"DXB 3190",
+  "KB1468":"DXB 3191",
+  "KB1469":"DXB 3192",
+  "KB1470":"DXB 3193",
+  "KB1471":"DXB 3194",
+  "KB1472":"DXB 3195",
+  "KB1473":"DXB 3196",
+  "KB1474":"DXB 3197",
+  "KB1475":"DXB 3198",
+  "KB1476":"DXB 3199",
+  "KB1477":"DXB 3200",
+  "KB1478":"DXB 3201",
+  "KB1479":"DXB 3202",
+  "KB1480":"DXB 3203",
+  "KB1481":"DXB 3204",
+  "KB1482":"DXB 3205",
+  "KB1483":"DXB 3206",
+  "KB1484":"DXB 3207",
+  "KB1485":"DXB 3208",
+  "KB1486":"DXB 3209",
+  "KB1487":"DXB 3210",
+  "KB1488":"DXB 3211",
+  "KB1489":"DXB 3212",
+  "KB1490":"DXB 3213",
+  "KB1491":"DXB 3214",
+  "KB1492":"DXB 3215",
+  "KB1493":"DXB 3216",
+  "KB1494":"DXB 3217",
+  "KB1495":"DXB 3218",
+  "KB1496":"DXB 3219",
+  "KB1497":"DXB 3220",
+  "KB1498":"DXB 3221",
+  "KB1499":"DXB 3222",
+  "KB1500":"DXB 3223",
+  "KB1501":"DXB 3224",
+  "KB1502":"DXB 3225",
+  "KB1503":"DXB 3226",
+  "KB1504":"DXB 3227",
+  "KB1505":"DXB 3228",
+  "KB1506":"DXB 3229",
+  "KB1507":"DXB 3230",
+  "KB1508":"DXB 3231",
+  "KB1509":"DXB 3232",
+  "KB1510":"DXB 3233",
+  "KB1511":"DXB 3234",
+  "KB1512":"DXB 3235",
+  "KB1513":"DXB 3236",
+  "KB1514":"DXB 3237",
+  "KB1515":"DXB 3238",
+  "KB1516":"DXB 3239",
+  "KB1517":"DXB 3240",
+  "KB1518":"DXB 3241",
+  "KB1519":"DXB 3242",
+  "KB1520":"DXB 3243",
+  "KB1521":"DXB 3244",
+  "KB1522":"DXB 3245",
+  "KB1523":"DXB 3246",
+  "KB1524":"DXB 3247",
+  "KB1525":"DXB 3248",
+  "KB1526":"DXB 3249",
+  "KB1527":"DXB 3250",
+  "KB1528":"DXB 3251",
+  "KB1529":"DXB 3252",
+  "KB1530":"DXB 3253",
+  "KB1531":"DXB 3254",
+  "KB1532":"DXB 3255",
+  "KB1533":"DXB 3256",
+  "KB1534":"DXB 3257",
+  "KB1535":"DXB 3258",
+  "KB1536":"DXB 3259",
+  "KB1537":"DXB 3260",
+  "KB1538":"DXB 3261",
+  "KB1539":"DXB 3262",
+  "KB1540":"DXB 3263",
+  "KB1541":"DXB 3264",
+  "KB1542":"DXB 3265",
+  "KB1543":"DXB 3266",
+  "KB1544":"DXB 3267",
+  "KB1545":"DXB 3268",
+  "KB1546":"DXB 3269",
+  "KB1547":"DXB 3270",
+  "KB1548":"DXB 3271",
+  "KB1549":"DXB 3272",
+  "KB1550":"DXB 3273",
+  "KB1551":"DXB 3274",
+  "KB1552":"DXB 3275",
+  "KB1553":"DXB 3276",
+  "KB1554":"DXB 3277",
+  "KB1555":"DXB 6984",
+  "KB1556":"DXB 4689",
+  "KB1557":"DXB 4690",
+  "KB1558":"DXB 4691",
+  "KB1559":"DXB 4692",
+  "KB1560":"DXB 4693",
+  "KB1561":"DXB 4694",
+  "KB1562":"DXB 4695",
+  "KB1563":"DXB 4696",
+  "KB1564":"DXB 4697",
+  "KB1565":"DXB 4698",
+  "KB1566":"DXB 4699",
+  "KB1567":"DXB 4700",
+  "KB1568":"DXB 4701",
+  "KB1569":"DXB 4702",
+  "KB1570":"DXB 4703",
+  "KB1571":"DXB 4704",
+  "KB1572":"DXB 4705",
+  "KB1573":"DXB 4706",
+  "KB1574":"DXB 4707",
+  "KB1575":"DXB 4708",
+  "KB1576":"DXB 4709",
+  "KB1577":"DXB 4710",
+  "KB1578":"DXB 4711",
+  "KB1579":"DXB 4712",
+  "KB1580":"DXB 4713",
+  "KB1581":"DXB 4714",
+  "KB1582":"DXB 4715",
+  "KB1583":"DXB 4716",
+  "KB1584":"DXB 4717",
+  "KB1585":"DXB 4718",
+  "KB1586":"DXB 4719",
+  "KB1587":"DXB 4720",
+  "KB1588":"DXB 4721",
+  "KB1589":"DXB 4722",
+  "KB1590":"DXB 4723",
+  "KB1591":"DXB 4724",
+  "KB1592":"DXB 4725",
+  "KB1593":"DXB 4726",
+  "KB1594":"DXB 4727",
+  "KB1595":"DXB 4728",
+  "KB1596":"DXB 4729",
+  "KB1597":"DXB 4730",
+  "KB1598":"DXB 4731",
+  "KB1599":"DXB 4732",
+  "KB1600":"DXB 4733",
+  "KB1601":"DXB 4734",
+  "KB1602":"DXB 4735",
+  "KB1603":"DXB 4736",
+  "KB1604":"DXB 4737",
+  "KB1605":"DXB 4738",
+  "KB1606":"DXB 4739",
+  "KB1607":"DXB 4740",
+  "KB1608":"DXB 4741",
+  "KB1609":"DXB 4742",
+  "KB1610":"DXB 4743",
+  "KB1611":"DXB 4744",
+  "KB1612":"DXB 4745",
+  "KB1613":"DXB 4746",
+  "KB1614":"DXB 4747",
+  "KB1615":"DXB 4748",
+  "KB1616":"DXB 4749",
+  "KB1617":"DXB 4750",
+  "KB1618":"DXB 4751",
+  "KB1619":"DXB 4752",
+  "KB1620":"DXB 4753",
+  "KB1621":"DXB 4754",
+  "KB1622":"DXB 4755",
+  "KB1623":"DXB 4756",
+  "KB1624":"DXB 4757",
+  "KB1625":"DXB 4758",
+  "KB1626":"DXB 4759",
+  "KB1627":"DXB 4760",
+  "KB1628":"DXB 4761",
+  "KB1629":"DXB 4762",
+  "KB1630":"DXB 4763",
+  "KB1631":"DXB 4764",
+  "KB1632":"DXB 4765",
+  "KB1633":"DXB 4766",
+  "KB1634":"DXB 4767",
+  "KB1635":"DXB 4768",
+  "KB1636":"DXB 4769",
+  "KB1637":"DXB 4770",
+  "KB1638":"DXB 4771",
+  "KB1639":"DXB 4772",
+  "KB1640":"DXB 4596",
+  "KB1641":"DXB 4597",
+  "KB1642":"DXB 4598",
+  "KB1643":"DXB 1197",
+  "KB1644":"DXB 2988",
+  "KB1645":"DXB 21792",
+  "KB1646":"DXB 1104",
+  "KB1647":"DXB 2505",
+  "KB1648":"DXB 4039",
+  "KB1649":"DXB 4149",
+  "KB1650":"DXB 5428",
+  "KB1651":"DXB 5429",
+  "KB1652":"DXB 5430",
+  "KB1653":"DXB 5431",
+  "KB1654":"DXB 5432",
+  "KB1655":"DXB 5433",
+  "KB1656":"DXB 5439",
+  "KB1657":"DXB 5435",
+  "KB1658":"DXB 5436",
+  "KB1659":"DXB 5437",
+  "KB1660":"DXB 5438",
+  "KB1661":"DXB 5434",
+  "KB1662":"DXB 5440",
+  "KB1663":"DXB 5441",
+  "KB1664":"DXB 5442",
+  "KB1665":"DXB 5443",
+  "KB1666":"DXB 5444",
+  "KB1667":"DXB 5445",
+  "KB1668":"DXB 5446",
+  "KB1669":"DXB 5447",
+  "KB1670":"DXB 5448",
+  "KB1671":"DXB 5449",
+  "KB1672":"DXB 5450",
+  "KB1673":"DXB 5451",
+  "KB1674":"DXB 5452",
+  "KB1675":"DXB 5453",
+  "KB1676":"DXB 5454",
+  "KB1677":"DXB 5455",
+  "KB1678":"DXB 5456",
+  "KB1679":"DXB 5457",
+  "KB1680":"DXB 5458",
+  "KB1681":"DXB 5459",
+  "KB1682":"DXB 5460",
+  "KB1683":"DXB 5461",
+  "KB1684":"DXB 5462",
+  "KB1685":"DXB 5463",
+  "KB1686":"DXB 5464",
+  "KB1687":"DXB 5465",
+  "KB1688":"DXB 5466",
+  "KB1689":"DXB 5467",
+  "KB1690":"DXB 5468",
+  "KB1691":"DXB 5469",
+  "KB1692":"DXB 5470",
+  "KB1693":"DXB 5471",
+  "KB1694":"DXB 5472",
+  "KB1695":"DXB 5473",
+  "KB1696":"DXB 5474",
+  "KB1697":"DXB 5475",
+  "KB1698":"DXB 5476",
+  "KB1699":"DXB 5477",
+  "KB1700":"DXB 5478",
+  "KB1701":"DXB 5479",
+  "KB1702":"DXB 5480",
+  "KB1703":"DXB 5481",
+  "KB1704":"DXB 5482",
+  "KB1705":"DXB 5483",
+  "KB1706":"DXB 5484",
+  "KB1707":"DXB 5485",
+  "KB1708":"DXB 5486",
+  "KB1709":"DXB 5487",
+  "KB1710":"DXB 5488",
+  "KB1711":"DXB 5489",
+  "KB1712":"DXB 5490",
+  "KB1713":"DXB 5491",
+  "KB1714":"DXB 5492",
+  "KB1715":"DXB 5493",
+  "KB1716":"DXB 5494",
+  "KB1717":"DXB 5495",
+  "KB1718":"DXB 5496",
+  "KB1719":"DXB 5497",
+  "KB1720":"DXB 5498",
+  "KB1721":"DXB 5499",
+  "KB1722":"DXB 5500",
+  "KB1723":"DXB 5867",
+  "KB1724":"DXB 6001",
+  "KB1725":"DXB 6002",
+  "KB1726":"DXB 6003",
+  "KB1727":"DXB 6004",
+  "KB1728":"DXB 6005",
+  "KB1729":"DXB 6006",
+  "KB1730":"DXB 6007",
+  "KB1731":"DXB 6008",
+  "KB1732":"DXB 6009",
+  "KB1733":"DXB 6010",
+  "KB1734":"DXB 6011",
+  "KB1735":"DXB 6012",
+  "KB1736":"DXB 6013",
+  "KB1737":"DXB 6014",
+  "KB1738":"DXB 6015",
+  "KB1739":"DXB 6016",
+  "KB1740":"DXB 6017",
+  "KB1741":"DXB 6018",
+  "KB1742":"DXB 6019",
+  "KB1743":"DXB 6020",
+  "KB1744":"DXB 6021",
+  "KB1745":"DXB 6022",
+  "KB1746":"DXB 6023",
+  "KB1747":"DXB 6024",
+  "KB1748":"DXB 6025",
+  "KB1749":"DXB 6026",
+  "KB1750":"DXB 6027",
+  "KB1751":"DXB 6028",
+  "KB1752":"DXB 6029",
+  "KB1753":"DXB 6030",
+  "KB1754":"DXB 6031",
+  "KB1755":"DXB 6032",
+  "KB1756":"DXB 6033",
+  "KB1757":"DXB 6034",
+  "KB1758":"DXB 6035",
+  "KB1759":"DXB 6036",
+  "KB1760":"DXB 6037",
+  "KB1761":"DXB 6038",
+  "KB1762":"DXB 6039",
+  "KB1763":"DXB 6040",
+  "KB1764":"DXB 6041",
+  "KB1765":"DXB 6042",
+  "KB1766":"DXB 6043",
+  "KB1767":"DXB 6044",
+  "KB1768":"DXB 6045",
+  "KB1769":"DXB 6046",
+  "KB1770":"DXB 6047",
+  "KB1771":"DXB 6048",
+  "KB1772":"DXB 6049",
+  "KB1773":"DXB 6050",
+  "KB1774":"DXB 6051",
+  "KB1775":"DXB 6052",
+  "KB1776":"DXB 6053",
+  "KB1777":"DXB 6054",
+  "KB1778":"DXB 6055",
+  "KB1779":"DXB 6056",
+  "KB1780":"DXB 6057",
+  "KB1781":"DXB 6058",
+  "KB1782":"DXB 6059",
+  "KB1783":"DXB 6060",
+  "KB1784":"DXB 6061",
+  "KB1785":"DXB 6062",
+  "KB1786":"DXB 6063",
+  "KB1787":"DXB 6064",
+  "KB1788":"DXB 6065",
+  "KB1789":"DXB 6066",
+  "KB1790":"DXB 6067",
+  "KB1791":"DXB 6068",
+  "KB1792":"DXB 6069",
+  "KB1793":"DXB 6070",
+  "KB1794":"DXB 6071",
+  "KB1795":"DXB 6072",
+  "KB1796":"DXB 6073",
+  "KB1797":"DXB 6074",
+  "KB1798":"DXB 6075",
+  "KB1799":"DXB 6076",
+  "KB1800":"DXB 6077",
+  "KB1801":"DXB 6078",
+  "KB1802":"DXB 6079",
+  "KB1803":"DXB 6080",
+  "KB1804":"DXB 6081",
+  "KB1805":"DXB 6082",
+  "KB1806":"DXB 6083",
+  "KB1807":"DXB 6084",
+  "KB1808":"DXB 6085",
+  "KB1809":"DXB 6086",
+  "KB1810":"DXB 6087",
+  "KB1811":"DXB 6088",
+  "KB1812":"DXB 6089",
+  "KB1813":"DXB 6090",
+  "KB1814":"DXB 6091",
+  "KB1815":"DXB 6092",
+  "KB1816":"DXB 6093",
+  "KB1817":"DXB 6094",
+  "KB1818":"DXB 6095",
+  "KB1819":"DXB 6096",
+  "KB1820":"DXB 6097",
+  "KB1821":"DXB 6098",
+  "KB1822":"DXB 6099",
+  "KB1823":"DXB 6100",
+  "KB1824":"DXB 6101",
+  "KB1825":"DXB 6102",
+  "KB1826":"DXB 6103",
+  "KB1827":"DXB 7227",
+  "KB1828":"DXB 7420",
+  "KB1829":"DXB 17260",
+  "KB1830":"DXB 21635",
+  "KB1831":"DXB 21919",
+  "KB1832":"DXB 25019",
+  "KB1833":"DXB 25155",
+  "KB1834":"DXB 25234",
+  "KB1835":"DXB 48240",
+  "KB1836":"DXB 48260",
+  "KB1837":"DXB 48738",
+  "KB1838":"DXB 48776",
+  "KB1839":"DXB 66379",
+  "KB1840":"DXB 66394",
+  "KB1841":"DXB 66468",
+  "KB1842":"DXB 76176",
+  "KB1843":"DXB 78029",
+  "KB1844":"DXB 80196",
+  "KB1845":"DXB 80371",
+  "KB1846":"DXB 6104",
+  "KB1847":"DXB 6105",
+  "KB1848":"DXB 6106",
+  "KB1849":"DXB 6107",
+  "KB1850":"DXB 6108",
+  "KB1851":"DXB 6109",
+  "KB1852":"DXB 6110",
+  "KB1853":"DXB 6111",
+  "KB1854":"DXB 6112",
+  "KB1855":"DXB 6113",
+  "KB1856":"DXB 6114",
+  "KB1857":"DXB 6115",
+  "KB1858":"DXB 6116",
+  "KB1859":"DXB 6117",
+  "KB1860":"DXB 6118",
+  "KB1861":"DXB 6119",
+  "KB1862":"DXB 6120",
+  "KB1863":"DXB 6121",
+  "KB1864":"DXB 6122",
+  "KB1865":"DXB 6123",
+  "KB1866":"DXB 6124",
+  "KB1867":"DXB 6125",
+  "KB1868":"DXB 6126",
+  "KB1869":"DXB 6127",
+  "KB1870":"DXB 6128",
+  "KB1871":"DXB 6129",
+  "KB1872":"DXB 6130",
+  "KB1873":"DXB 6131",
+  "KB1874":"DXB 6132",
+  "KB1875":"DXB 6133",
+  "KB1876":"DXB 6134",
+  "KB1877":"DXB 6135",
+  "KB1878":"DXB 6136",
+  "KB1879":"DXB 6137",
+  "KB1880":"DXB 6138",
+  "KB1881":"DXB 6139",
+  "KB1882":"DXB 6140",
+  "KB1883":"DXB 6141",
+  "KB1884":"DXB 6142",
+  "KB1885":"DXB 6143",
+  "KB1886":"DXB 6144",
+  "KB1887":"DXB 6145",
+  "KB1888":"DXB 6146",
+  "KB1889":"DXB 6147",
+  "KB1890":"DXB 6148",
+  "KB1891":"DXB 6149",
+  "KB1892":"DXB 6150",
+  "KB1893":"DXB 6151",
+  "KB1894":"DXB 6152",
+  "KB1895":"DXB 6153",
+  "KB1896":"DXB 6154",
+  "KB1897":"DXB 6155",
+  "KB1898":"DXB 6156",
+  "KB1899":"DXB 6157",
+  "KB1900":"DXB 6158",
+  "KB1901":"DXB 6159",
+  "KB1902":"DXB 6160",
+  "KB1903":"DXB 6161",
+  "KB1904":"DXB 6162",
+  "KB1905":"DXB 6163",
+  "KB1906":"DXB 6164",
+  "KB1907":"DXB 6165",
+  "KB1908":"DXB 6166",
+  "KB1909":"DXB 6167",
+  "KB1910":"DXB 6168",
+  "KB1911":"DXB 6169",
+  "KB1912":"DXB 6170",
+  "KB1913":"DXB 6171",
+  "KB1914":"DXB 6172",
+  "KB1915":"DXB 6173",
+  "KB1916":"DXB 6174",
+  "KB1917":"DXB 6175",
+  "KB1918":"DXB 6176",
+  "KB1919":"DXB 6177",
+  "KB1920":"DXB 6178",
+  "KB1921":"DXB 6179",
+  "KB1922":"DXB 6180",
+  "KB1923":"DXB 6181",
+  "KB1924":"DXB 6182",
+  "KB1925":"DXB 6183",
+  "KB1926":"DXB 6184",
+  "KB1927":"DXB 6185",
+  "KB1928":"DXB 6186",
+  "KB1929":"DXB 6187",
+  "KB1930":"DXB 6188",
+  "KB1931":"DXB 6189",
+  "KB1932":"DXB 6190",
+  "KB1933":"DXB 6191",
+  "KB1934":"DXB 6192",
+  "KB1935":"DXB 6193",
+  "KB1936":"DXB 6194",
+  "KB1937":"DXB 6195",
+  "KB1938":"DXB 6196",
+  "KB1939":"DXB 6197",
+  "KB1940":"DXB 6198",
+  "KB1941":"DXB 6199",
+  "KB1942":"DXB 6200",
+  "KB1943":"DXB 6201",
+  "KB1944":"DXB 6202",
+  "KB1945":"DXB 6203",
+  "KB1946":"DXB 6204",
+  "KB1947":"DXB 6205",
+  "KB1948":"DXB 6206",
+  "KB1949":"DXB 6207",
+  "KB1950":"DXB 6208",
+  "KB1951":"DXB 6209",
+  "KB1952":"DXB 6210",
+  "KB1953":"DXB 6211",
+  "KB1954":"DXB 6212",
+  "KB1955":"DXB 6213",
+  "KB1956":"DXB 6214",
+  "KB1957":"DXB 6215",
+  "KB1958":"DXB 6216",
+  "KB1959":"DXB 6217",
+  "KB1960":"DXB 6218",
+  "KB1961":"DXB 6219",
+  "KB1962":"DXB 6220",
+  "KB1963":"DXB 6221",
+  "KB1964":"DXB 6222",
+  "KB1965":"DXB 6223",
+  "KB1966":"DXB 6224",
+  "KB1967":"DXB 6225",
+  "KB1968":"DXB 6226",
+  "KB1969":"DXB 6227",
+  "KB1970":"DXB 6228",
+  "KB1971":"DXB 6229",
+  "KB1972":"DXB 6230",
+  "KB1973":"DXB 6231",
+  "KB1974":"DXB 6232",
+  "KB1975":"DXB 6233",
+  "KB1976":"DXB 6234",
+  "KB1977":"DXB 6235",
+  "KB1978":"DXB 6236",
+  "KB1979":"DXB 6237",
+  "KB1980":"DXB 6238",
+  "KB1981":"DXB 6239",
+  "KB1982":"DXB 6240",
+  "KB1983":"DXB 6241",
+  "KB1984":"DXB 6242",
+  "KB1985":"DXB 6243",
+  "KB1986":"DXB 6244",
+  "KB1987":"DXB 6245",
+  "KB1988":"DXB 6246",
+  "KB1989":"DXB 6247",
+  "KB1990":"DXB 6248",
+  "KB1991":"DXB 6249",
+  "KB1992":"DXB 6250",
+  "KB1993":"DXB 6251",
+  "KB1994":"DXB 6252",
+  "KB1995":"DXB 6253",
+  "KB1996":"DXB 6254",
+  "KB1997":"DXB 6255",
+  "KB1998":"DXB 6256",
+  "KB1999":"DXB 6257",
+  "KB2000":"DXB 6258",
+  "KB2001":"DXB 6259",
+  "KB2002":"DXB 6260",
+  "KB2003":"DXB 6261",
+  "KB2004":"DXB 6262",
+  "KB2005":"DXB 6263",
+  "KB2006":"DXB 6264",
+  "KB2007":"DXB 6265",
+  "KB2008":"DXB 6266",
+  "KB2009":"DXB 6267",
+  "KB2010":"DXB 6268",
+  "KB2011":"DXB 6269",
+  "KB2012":"DXB 6270",
+  "KB2013":"DXB 6271",
+  "KB2014":"DXB 6272",
+  "KB2015":"DXB 6273",
+  "KB2016":"DXB 6274",
+  "KB2017":"DXB 6275",
+  "KB2018":"DXB 6276",
+  "KB2019":"DXB 6277",
+  "KB2020":"DXB 6278",
+  "KB2021":"DXB 6279",
+  "KB2022":"DXB 6280",
+  "KB2023":"DXB 6281",
+  "KB2024":"DXB 6282",
+  "KB2025":"DXB 6283",
+  "KB2026":"DXB 8513",
+  "KB2027":"DXB 7505",
+  "KB2028":"DXB 10888",
+  "KB2029":"DXB 10880",
+  "KB2030":"DXB 10881",
+  "KB2031":"DXB 10900",
+  "KB2032":"DXB 10909",
+  "KB2033":"DXB 10999",
+  "KB2034":"DXB 10991",
+  "KB2035":"DXB 10867",
+  "KB2036":"DXB 10901",
+  "KB2037":"DXB 10910",
+  "KB2038":"DXB 10889",
+  "KB2039":"DXB 10911",
+  "KB2040":"DXB 10990",
+  "KB2041":"DXB 11001",
+  "KB2042":"DXB 10864",
+  "KB2043":"DXB 10871",
+  "KB2044":"DXB 10866",
+  "KB2045":"DXB 10872",
+  "KB2046":"DXB 10873",
+  "KB2047":"DXB 10874",
+  "KB2048":"DXB 10875",
+  "KB2049":"DXB 10876",
+  "KB2050":"DXB 10878",
+  "KB2051":"DXB 10877",
+  "KB2052":"DXB 10879",
+  "KB2053":"DXB 10865",
+  "KB2054":"DXB 10883",
+  "KB2055":"DXB 10868",
+  "KB2056":"DXB 10869",
+  "KB2057":"DXB 10870",
+  "KB2058":"DXB 10882",
+  "KB2059":"DXB 10884",
+  "KB2060":"DXB 10885",
+  "KB2061":"DXB 10886",
+  "KB2062":"DXB 10887",
+  "KB2063":"DXB 10980",
+  "KB2064":"DXB 11011",
+  "KB2065":"DXB 11000",
+  "KB2066":"DXB 10890",
+  "KB2067":"DXB 10891",
+  "KB2068":"DXB 10892",
+  "KB2069":"DXB 10898",
+  "KB2070":"DXB 10896",
+  "KB2071":"DXB 10895",
+  "KB2072":"DXB 10902",
+  "KB2073":"DXB 10899",
+  "KB2074":"DXB 10939",
+  "KB2075":"DXB 10922",
+  "KB2076":"DXB 10893",
+  "KB2077":"DXB 10894",
+  "KB2078":"DXB 10897",
+  "KB2079":"DXB 10903",
+  "KB2080":"DXB 10904",
+  "KB2081":"DXB 10905",
+  "KB2082":"DXB 10906",
+  "KB2083":"DXB 10907",
+  "KB2084":"DXB 10908",
+  "KB2085":"DXB 10912",
+  "KB2086":"DXB 10913",
+  "KB2087":"DXB 10914",
+  "KB2088":"DXB 10915",
+  "KB2089":"DXB 10916",
+  "KB2090":"DXB 10917",
+  "KB2091":"DXB 10919",
+  "KB2092":"DXB 10918",
+  "KB2093":"DXB 10920",
+  "KB2094":"DXB 11010",
+  "KB2095":"DXB 10921",
+  "KB2096":"DXB 10923",
+  "KB2097":"DXB 10924",
+  "KB2098":"DXB 10925",
+  "KB2099":"DXB 10926",
+  "KB2100":"DXB 10927",
+  "KB2101":"DXB 10928",
+  "KB2102":"DXB 10929",
+  "KB2103":"DXB 10930",
+  "KB2104":"DXB 11077",
+  "KB2105":"DXB 11107",
+  "KB2106":"DXB 10955",
+  "KB2107":"DXB 11002",
+  "KB2108":"DXB 11003",
+  "KB2109":"DXB 11012",
+  "KB2110":"DXB 11005",
+  "KB2111":"DXB 11021",
+  "KB2112":"DXB 11008",
+  "KB2113":"DXB 11004",
+  "KB2114":"DXB 11023",
+  "KB2115":"DXB 10934",
+  "KB2116":"DXB 10971",
+  "KB2117":"DXB 11009",
+  "KB2118":"DXB 11013",
+  "KB2119":"DXB 11050",
+  "KB2120":"DXB 11006",
+  "KB2121":"DXB 11022",
+  "KB2122":"DXB 11030",
+  "KB2123":"DXB 10992",
+  "KB2124":"DXB 11031",
+  "KB2125":"DXB 11033",
+  "KB2126":"DXB 11007",
+  "KB2127":"DXB 11101",
+  "KB2128":"DXB 11070",
+  "KB2129":"DXB 10931",
+  "KB2130":"DXB 10932",
+  "KB2131":"DXB 10933",
+  "KB2132":"DXB 11111",
+  "KB2133":"DXB 11110",
+  "KB2134":"DXB 11112",
+  "KB2135":"DXB 11113",
+  "KB2136":"DXB 11114",
+  "KB2137":"DXB 11104",
+  "KB2138":"DXB 10947",
+  "KB2139":"DXB 10948",
+  "KB2140":"DXB 10949",
+  "KB2141":"DXB 11109",
+  "KB2142":"DXB 11100",
+  "KB2143":"DXB 10995",
+  "KB2144":"DXB 10944",
+  "KB2145":"DXB 11014",
+  "KB2146":"DXB 11080",
+  "KB2147":"DXB 10950",
+  "KB2148":"DXB 11102",
+  "KB2149":"DXB 11015",
+  "KB2150":"DXB 11103",
+  "KB2151":"DXB 10935",
+  "KB2152":"DXB 10936",
+  "KB2153":"DXB 10937",
+  "KB2154":"DXB 10946",
+  "KB2155":"DXB 11016",
+  "KB2156":"DXB 10951",
+  "KB2157":"DXB 11020",
+  "KB2158":"DXB 10938",
+  "KB2159":"DXB 10940",
+  "KB2160":"DXB 10941",
+  "KB2161":"DXB 10942",
+  "KB2162":"DXB 10943",
+  "KB2163":"DXB 10945",
+  "KB2164":"DXB 11061",
+  "KB2165":"DXB 10953",
+  "KB2166":"DXB 10969",
+  "KB2167":"DXB 10960",
+  "KB2168":"DXB 10970",
+  "KB2169":"DXB 10981",
+  "KB2170":"DXB 11040",
+  "KB2171":"DXB 11057",
+  "KB2172":"DXB 11065",
+  "KB2173":"DXB 10975",
+  "KB2174":"DXB 11099",
+  "KB2175":"DXB 11096",
+  "KB2176":"DXB 11093",
+  "KB2177":"DXB 11064",
+  "KB2178":"DXB 11106",
+  "KB2179":"DXB 10954",
+  "KB2180":"DXB 10952",
+  "KB2181":"DXB 10957",
+  "KB2182":"DXB 10956",
+  "KB2183":"DXB 10959",
+  "KB2184":"DXB 10958",
+  "KB2185":"DXB 11105",
+  "KB2186":"DXB 11032",
+  "KB2187":"DXB 11090",
+  "KB2188":"DXB 11039",
+  "KB2189":"DXB 11044",
+  "KB2190":"DXB 11017",
+  "KB2191":"DXB 11055",
+  "KB2192":"DXB 11066",
+  "KB2193":"DXB 11088",
+  "KB2194":"DXB 11108",
+  "KB2195":"DXB 10961",
+  "KB2196":"DXB 10993",
+  "KB2197":"DXB 10996",
+  "KB2198":"DXB 10968",
+  "KB2199":"DXB 10963",
+  "KB2200":"DXB 10964",
+  "KB2201":"DXB 10966",
+  "KB2202":"DXB 10967",
+  "KB2203":"DXB 10965",
+  "KB2204":"DXB 11060",
+  "KB2205":"DXB 11063",
+  "KB2206":"DXB 11036",
+  "KB2207":"DXB 11089",
+  "KB2208":"DXB 11098",
+  "KB2209":"DXB 11086",
+  "KB2210":"DXB 11097",
+  "KB2211":"DXB 11095",
+  "KB2212":"DXB 11094",
+  "KB2213":"DXB 11087",
+  "KB2214":"DXB 11085",
+  "KB2215":"DXB 11084",
+  "KB2216":"DXB 11083",
+  "KB2217":"DXB 11082",
+  "KB2218":"DXB 10977",
+  "KB2219":"DXB 11037",
+  "KB2220":"DXB 11058",
+  "KB2221":"DXB 11019",
+  "KB2222":"DXB 11046",
+  "KB2223":"DXB 11047",
+  "KB2224":"DXB 11045",
+  "KB2225":"DXB 11038",
+  "KB2226":"DXB 10974",
+  "KB2227":"DXB 10962",
+  "KB2228":"DXB 10994",
+  "KB2229":"DXB 11052",
+  "KB2230":"DXB 11042",
+  "KB2231":"DXB 11056",
+  "KB2232":"DXB 11026",
+  "KB2233":"DXB 11025",
+  "KB2234":"DXB 11054",
+  "KB2235":"DXB 11053",
+  "KB2236":"DXB 10988",
+  "KB2237":"DXB 11048",
+  "KB2238":"DXB 11079",
+  "KB2239":"DXB 11078",
+  "KB2240":"DXB 11076",
+  "KB2241":"DXB 11075",
+  "KB2242":"DXB 11074",
+  "KB2243":"DXB 11073",
+  "KB2244":"DXB 11072",
+  "KB2245":"DXB 11068",
+  "KB2246":"DXB 11067",
+  "KB2247":"DXB 11062",
+  "KB2248":"DXB 11043",
+  "KB2249":"DXB 11024",
+  "KB2250":"DXB 11027",
+  "KB2251":"DXB 11028",
+  "KB2252":"DXB 11029",
+  "KB2253":"DXB 10976",
+  "KB2254":"DXB 10972",
+  "KB2255":"DXB 10973",
+  "KB2256":"DXB 10978",
+  "KB2257":"DXB 11034",
+  "KB2258":"DXB 11035",
+  "KB2259":"DXB 10998",
+  "KB2260":"DXB 10997",
+  "KB2261":"DXB 10989",
+  "KB2262":"DXB 10987",
+  "KB2263":"DXB 10985",
+  "KB2264":"DXB 10983",
+  "KB2265":"DXB 10984",
+  "KB2266":"DXB 10979",
+  "KB2267":"DXB 10986",
+  "KB2268":"DXB 11092",
+  "KB2269":"DXB 11018",
+  "KB2270":"DXB 11069",
+  "KB2271":"DXB 11041",
+  "KB2272":"DXB 11059",
+  "KB2273":"DXB 11081",
+  "KB2274":"DXB 11049",
+  "KB2275":"DXB 11071",
+  "KB2276":"DXB 11051",
+  "KB2277":"DXB 11091",
+  "KB2278":"DXB 6751",
+  "KB2279":"DXB 6808",
+  "KB2280":"DXB 6799",
+  "KB2281":"DXB 6787",
+  "KB2282":"DXB 6770",
+  "KB2283":"DXB 6778",
+  "KB2284":"DXB 6771",
+  "KB2285":"DXB 6807",
+  "KB2286":"DXB 6797",
+  "KB2287":"DXB 6748",
+  "KB2288":"DXB 6749",
+  "KB2289":"DXB 6767",
+  "KB2290":"DXB 6777",
+  "KB2291":"DXB 6757",
+  "KB2292":"DXB 6800",
+  "KB2293":"DXB 6780",
+  "KB2294":"DXB 6755",
+  "KB2295":"DXB 6750",
+  "KB2296":"DXB 6760",
+  "KB2297":"DXB 6766",
+  "KB2298":"DXB 6758",
+  "KB2299":"DXB 6759",
+  "KB2300":"DXB 6762",
+  "KB2301":"DXB 6756",
+  "KB2302":"DXB 6769",
+  "KB2303":"DXB 6785",
+  "KB2304":"DXB 6761",
+  "KB2305":"DXB 6763",
+  "KB2306":"DXB 6765",
+  "KB2307":"DXB 6772",
+  "KB2308":"DXB 6773",
+  "KB2309":"DXB 6774",
+  "KB2310":"DXB 6775",
+  "KB2311":"DXB 6781",
+  "KB2312":"DXB 6782",
+  "KB2313":"DXB 6793",
+  "KB2314":"DXB 6783",
+  "KB2315":"DXB 6790",
+  "KB2316":"DXB 6791",
+  "KB2317":"DXB 6792",
+  "KB2318":"DXB 6752",
+  "KB2319":"DXB 6753",
+  "KB2320":"DXB 6796",
+  "KB2321":"DXB 6795",
+  "KB2322":"DXB 6794",
+  "KB2323":"DXB 10845",
+  "KB2324":"DXB 10846",
+  "KB2325":"DXB 10847",
+  "KB2326":"DXB 6784",
+  "KB2327":"DXB 6805",
+  "KB2328":"DXB 6806",
+  "KB2329":"DXB 6804",
+  "KB2330":"DXB 6801",
+  "KB2331":"DXB 6802",
+  "KB2332":"DXB 10832",
+  "KB2333":"DXB 10834",
+  "KB2334":"DXB 10835",
+  "KB2335":"DXB 10838",
+  "KB2336":"DXB 10837",
+  "KB2337":"DXB 10836",
+  "KB2338":"DXB 10841",
+  "KB2339":"DXB 10842",
+  "KB2340":"DXB 10843",
+  "KB2341":"DXB 10844",
+  "KB2342":"DXB 10854",
+  "KB2343":"DXB 10849",
+  "KB2344":"DXB 10851",
+  "KB2345":"DXB 10855",
+  "KB2346":"DXB 10852",
+  "KB2347":"DXB 10853",
+  "KB2348":"DXB 6831",
+  "KB2349":"DXB 6819",
+  "KB2350":"DXB 6820",
+  "KB2351":"DXB 6412",
+  "KB2352":"DXB 6413",
+  "KB2353":"DXB 6830",
+  "KB2354":"DXB 6829",
+  "KB2355":"DXB 6416",
+  "KB2356":"DXB 6828",
+  "KB2357":"DXB 6415",
+  "KB2358":"DXB 6827",
+  "KB2359":"DXB 6414",
+  "KB2360":"DXB 6417",
+  "KB2361":"DXB 6826",
+  "KB2362":"DXB 6825",
+  "KB2363":"DXB 6824",
+  "KB2364":"DXB 6823",
+  "KB2365":"DXB 6822",
+  "KB2366":"DXB 10856",
+  "KB2367":"DXB 10857",
+  "KB2368":"DXB 10829",
+  "KB2369":"DXB 10827",
+  "KB2370":"DXB 6912",
+  "KB2371":"DXB 6954",
+  "KB2372":"DXB 6953",
+  "KB2373":"DXB 6897",
+  "KB2374":"DXB 6908",
+  "KB2375":"DXB 6904",
+  "KB2376":"DXB 6833",
+  "KB2377":"DXB 6835",
+  "KB2378":"DXB 6909",
+  "KB2379":"DXB 6950",
+  "KB2380":"DXB 6896",
+  "KB2381":"DXB 6906",
+  "KB2382":"DXB 6832",
+  "KB2383":"DXB 6839",
+  "KB2384":"DXB 6821",
+  "KB2385":"DXB 6898",
+  "KB2386":"DXB 6900",
+  "KB2387":"DXB 6901",
+  "KB2388":"DXB 6949",
+  "KB2389":"DXB 6910",
+  "KB2390":"DXB 6948",
+  "KB2391":"DXB 6850",
+  "KB2392":"DXB 6411",
+  "KB2393":"DXB 6899",
+  "KB2394":"DXB 6919",
+  "KB2395":"DXB 6893",
+  "KB2396":"DXB 6905",
+  "KB2397":"DXB 6951",
+  "KB2398":"DXB 6952",
+  "KB2399":"DXB 6840",
+  "KB2400":"DXB 6838",
+  "KB2401":"DXB 6841",
+  "KB2402":"DXB 6842",
+  "KB2403":"DXB 6843",
+  "KB2404":"DXB 6844",
+  "KB2405":"DXB 6846",
+  "KB2406":"DXB 6847",
+  "KB2407":"DXB 6849",
+  "KB2408":"DXB 6852",
+  "KB2409":"DXB 6853",
+  "KB2410":"DXB 6855",
+  "KB2411":"DXB 6902",
+  "KB2412":"DXB 6956",
+  "KB2413":"DXB 6916",
+  "KB2414":"DXB 6918",
+  "KB2415":"DXB 6920",
+  "KB2416":"DXB 6932",
+  "KB2417":"DXB 6947",
+  "KB2418":"DXB 6894",
+  "KB2419":"DXB 6895",
+  "KB2420":"DXB 6818",
+  "KB2421":"DXB 6960",
+  "KB2422":"DXB 6962",
+  "KB2423":"DXB 6990",
+  "KB2424":"DXB 6966",
+  "KB2425":"DXB 6999",
+  "KB2426":"DXB 6996",
+  "KB2427":"DXB 11115",
+  "KB2428":"DXB 11116",
+  "KB2429":"DXB 11117",
+  "KB2430":"DXB 11118",
+  "KB2431":"DXB 11119",
+  "KB2432":"DXB 11120",
+  "KB2433":"DXB 11121",
+  "KB2434":"DXB 11122",
+  "KB2435":"DXB 6977",
+  "KB2436":"DXB 11123",
+  "KB2437":"DXB 11124",
+  "KB2438":"DXB 11125",
+  "KB2439":"DXB 11126",
+  "KB2440":"DXB 11127",
+  "KB2441":"DXB 6970",
+  "KB2442":"DXB 6971",
+  "KB2443":"DXB 6972",
+  "KB2444":"DXB 6961",
+  "KB2445":"DXB 6963",
+  "KB2446":"DXB 6964",
+  "KB2447":"DXB 6965",
+  "KB2448":"DXB 6968",
+  "KB2449":"DXB 11128",
+  "KB2450":"DXB 11129",
+  "KB2451":"DXB 11130",
+  "KB2452":"DXB 11131",
+  "KB2453":"DXB 11132",
+  "KB2454":"DXB 6974",
+  "KB2455":"DXB 11133",
+  "KB2456":"DXB 6975",
+  "KB2457":"DXB 6976",
+  "KB2458":"DXB 6978",
+  "KB2459":"DXB 11231",
+  "KB2460":"DXB 6980",
+  "KB2461":"DXB 6981",
+  "KB2462":"DXB 6983",
+  "KB2463":"DXB 6982",
+  "KB2464":"DXB 6988",
+  "KB2465":"DXB 6991",
+  "KB2466":"DXB 7522",
+  "KB2467":"DXB 7597",
+  "KB2468":"DXB 7598",
+  "KB2469":"DXB 6959",
+  "KB2470":"DXB 6979",
+  "KB2471":"DXB 6958",
+  "KB2472":"DXB 6986",
+  "KB2473":"DXB 6834",
+  "KB2474":"DXB 6913",
+  "KB2475":"DXB 6987",
+  "KB2476":"DXB 6989",
+  "KB2477":"DXB 7601",
+  "KB2478":"DXB 7503",
+  "KB2479":"DXB 7506",
+  "KB2480":"DXB 11137",
+  "KB2481":"DXB 6998",
+  "KB2482":"DXB 7628",
+  "KB2483":"DXB 7501",
+  "KB2484":"DXB 7658",
+  "KB2485":"DXB 7672",
+  "KB2486":"DXB 6995",
+  "KB2487":"DXB 6997",
+  "KB2488":"DXB 7706",
+  "KB2489":"DXB 7726",
+  "KB2490":"DXB 7831",
+  "KB2491":"DXB 8447",
+  "KB2492":"DXB 8491",
+  "KB2493":"DXB 11134",
+  "KB2494":"DXB 7000",
+  "KB2495":"DXB 7806",
+  "KB2496":"DXB 11141",
+  "KB2497":"DXB 11140",
+  "KB2498":"DXB 11135",
+  "KB2499":"DXB 11136",
+  "KB2500":"DXB 11138",
+  "KB2501":"DXB 11139",
+  "KB2502":"DXB 7716",
+  "KB2503":"DXB 7541",
+  "KB2504":"DXB 7644",
+  "KB2505":"DXB 11238",
+  "KB2506":"DXB 7519",
+  "KB2507":"DXB 7520",
+  "KB2508":"DXB 7523",
+  "KB2509":"DXB 7526",
+  "KB2510":"DXB 7528",
+  "KB2511":"DXB 7529",
+  "KB2512":"DXB 7530",
+  "KB2513":"DXB 7531",
+  "KB2514":"DXB 7532",
+  "KB2515":"DXB 7533",
+  "KB2516":"DXB 7518",
+  "KB2517":"DXB 7509",
+  "KB2518":"DXB 7540",
+  "KB2519":"DXB 7543",
+  "KB2520":"DXB 7544",
+  "KB2521":"DXB 7594",
+  "KB2522":"DXB 7546",
+  "KB2523":"DXB 7547",
+  "KB2524":"DXB 7548",
+  "KB2525":"DXB 7549",
+  "KB2526":"DXB 7507",
+  "KB2527":"DXB 7621",
+  "KB2528":"DXB 7620",
+  "KB2529":"DXB 7599",
+  "KB2530":"DXB 7508",
+  "KB2531":"DXB 7555",
+  "KB2532":"DXB 7550",
+  "KB2533":"DXB 6992",
+  "KB2534":"DXB 7556",
+  "KB2535":"DXB 7534",
+  "KB2536":"DXB 6993",
+  "KB2537":"DXB 7551",
+  "KB2538":"DXB 6994",
+  "KB2539":"DXB 7525",
+  "KB2540":"DXB 7535",
+  "KB2541":"DXB 7553",
+  "KB2542":"DXB 7617",
+  "KB2543":"DXB 7512",
+  "KB2544":"DXB 7517",
+  "KB2545":"DXB 7545",
+  "KB2546":"DXB 7537",
+  "KB2547":"DXB 7558",
+  "KB2548":"DXB 7557",
+  "KB2549":"DXB 7510",
+  "KB2550":"DXB 7559",
+  "KB2551":"DXB 7562",
+  "KB2552":"DXB 7513",
+  "KB2553":"DXB 7563",
+  "KB2554":"DXB 7564",
+  "KB2555":"DXB 7567",
+  "KB2556":"DXB 7568",
+  "KB2557":"DXB 7570",
+  "KB2558":"DXB 7514",
+  "KB2559":"DXB 7516",
+  "KB2560":"DXB 7571",
+  "KB2561":"DXB 7561",
+  "KB2562":"DXB 7618",
+  "KB2563":"DXB 7572",
+  "KB2564":"DXB 7615",
+  "KB2565":"DXB 7574",
+  "KB2566":"DXB 7575",
+  "KB2567":"DXB 7576",
+  "KB2568":"DXB 7542",
+  "KB2569":"DXB 7578",
+  "KB2570":"DXB 7579",
+  "KB2571":"DXB 7587",
+  "KB2572":"DXB 7586",
+  "KB2573":"DXB 7585",
+  "KB2574":"DXB 7596",
+  "KB2575":"DXB 7584",
+  "KB2576":"DXB 7583",
+  "KB2577":"DXB 7580",
+  "KB2578":"DXB 7582",
+  "KB2579":"DXB 7592",
+  "KB2580":"DXB 7590",
+  "KB2581":"DXB 7633",
+  "KB2582":"DXB 7588",
+  "KB2583":"DXB 7653",
+  "KB2584":"DXB 7613",
+  "KB2585":"DXB 7603",
+  "KB2586":"DXB 7652",
+  "KB2587":"DXB 7595",
+  "KB2588":"DXB 7616",
+  "KB2589":"DXB 7626",
+  "KB2590":"DXB 7651",
+  "KB2591":"DXB 7654",
+  "KB2592":"DXB 7609",
+  "KB2593":"DXB 7611",
+  "KB2594":"DXB 7538",
+  "KB2595":"DXB 7705",
+  "KB2596":"DXB 7606",
+  "KB2597":"DXB 7600",
+  "KB2598":"DXB 7650",
+  "KB2599":"DXB 7627",
+  "KB2600":"DXB 7577",
+  "KB2601":"DXB 7649",
+  "KB2602":"DXB 7648",
+  "KB2603":"DXB 7646",
+  "KB2604":"DXB 7645",
+  "KB2605":"DXB 7643",
+  "KB2606":"DXB 7642",
+  "KB2607":"DXB 7640",
+  "KB2608":"DXB 7638",
+  "KB2609":"DXB 7637",
+  "KB2610":"DXB 7635",
+  "KB2611":"DXB 7634",
+  "KB2612":"DXB 7589",
+  "KB2613":"DXB 7536",
+  "KB2614":"DXB 7591",
+  "KB2615":"DXB 7608",
+  "KB2616":"DXB 7632",
+  "KB2617":"DXB 7631",
+  "KB2618":"DXB 7629",
+  "KB2619":"DXB 7614",
+  "KB2620":"DXB 7624",
+  "KB2621":"DXB 7612",
+  "KB2622":"DXB 7610",
+  "KB2623":"DXB 7623",
+  "KB2624":"DXB 7604",
+  "KB2625":"DXB 7622",
+  "KB2626":"DXB 8057",
+  "KB2627":"DXB 6879",
+  "KB2628":"DXB 8060",
+  "KB2629":"DXB 8066",
+  "KB2630":"DXB 6870",
+  "KB2631":"DXB 8073",
+  "KB2632":"DXB 8076",
+  "KB2633":"DXB 8083",
+  "KB2634":"DXB 8075",
+  "KB2635":"DXB 8074",
+  "KB2636":"DXB 8071",
+  "KB2637":"DXB 8059",
+  "KB2638":"DXB 8069",
+  "KB2639":"DXB 8058",
+  "KB2640":"DXB 8054",
+  "KB2641":"DXB 8055",
+  "KB2642":"DXB 6880",
+  "KB2643":"DXB 8063",
+  "KB2644":"DXB 7655",
+  "KB2645":"DXB 6878",
+  "KB2646":"DXB 8056",
+  "KB2647":"DXB 6874",
+  "KB2648":"DXB 6876",
+  "KB2649":"DXB 6871",
+  "KB2650":"DXB 8085",
+  "KB2651":"DXB 6875",
+  "KB2652":"DXB 8126",
+  "KB2653":"DXB 8115",
+  "KB2654":"DXB 8120",
+  "KB2655":"DXB 8121",
+  "KB2656":"DXB 8116",
+  "KB2657":"DXB 8100",
+  "KB2658":"DXB 8113",
+  "KB2659":"DXB 8102",
+  "KB2660":"DXB 8112",
+  "KB2661":"DXB 8084",
+  "KB2662":"DXB 8082",
+  "KB2663":"DXB 8064",
+  "KB2664":"DXB 8086",
+  "KB2665":"DXB 8081",
+  "KB2666":"DXB 8109",
+  "KB2667":"DXB 8105",
+  "KB2668":"DXB 8061",
+  "KB2669":"DXB 8080",
+  "KB2670":"DXB 8079",
+  "KB2671":"DXB 8077",
+  "KB2672":"DXB 8093",
+  "KB2673":"DXB 8092",
+  "KB2674":"DXB 8089",
+  "KB2675":"DXB 8087",
+  "KB2676":"DXB 8078",
+  "KB2677":"DXB 8108",
+  "KB2678":"DXB 8107",
+  "KB2679":"DXB 8104",
+  "KB2680":"DXB 8068",
+  "KB2681":"DXB 8090",
+  "KB2682":"DXB 8101",
+  "KB2683":"DXB 8098",
+  "KB2684":"DXB 8099",
+  "KB2685":"DXB 8096",
+  "KB2686":"DXB 8095",
+  "KB2687":"DXB 10340",
+  "KB2688":"DXB 8934",
+  "KB2689":"DXB 10339",
+  "KB2690":"DXB 10338",
+  "KB2691":"DXB 10337",
+  "KB2692":"DXB 8933",
+  "KB2693":"DXB 8932",
+  "KB2694":"DXB 8123",
+  "KB2695":"DXB 8931",
+  "KB2696":"DXB 8929",
+  "KB2697":"DXB 8222",
+  "KB2698":"DXB 8110",
+  "KB2699":"DXB 8220",
+  "KB2700":"DXB 8333",
+  "KB2701":"DXB 8330",
+  "KB2702":"DXB 8339",
+  "KB2703":"DXB 8331",
+  "KB2704":"DXB 8818",
+  "KB2705":"DXB 8909",
+  "KB2706":"DXB 8919",
+  "KB2707":"DXB 8338",
+  "KB2708":"DXB 10341",
+  "KB2709":"DXB 8114",
+  "KB2710":"DXB 8117",
+  "KB2711":"DXB 8119",
+  "KB2712":"DXB 8917",
+  "KB2713":"DXB 8915",
+  "KB2714":"DXB 8912",
+  "KB2715":"DXB 8913",
+  "KB2716":"DXB 8914",
+  "KB2717":"DXB 8910",
+  "KB2718":"DXB 8122",
+  "KB2719":"DXB 8138",
+  "KB2720":"DXB 8148",
+  "KB2721":"DXB 8916",
+  "KB2722":"DXB 8918",
+  "KB2723":"DXB 8924",
+  "KB2724":"DXB 8922",
+  "KB2725":"DXB 8921",
+  "KB2726":"DXB 8928",
+  "KB2727":"DXB 8927",
+  "KB2728":"DXB 8925",
+  "KB2729":"DXB 8926",
+  "KB2730":"DXB 8136",
+  "KB2731":"DXB 8150",
+  "KB2732":"DXB 8141",
+  "KB2733":"DXB 8151",
+  "KB2734":"DXB 8143",
+  "KB2735":"DXB 8142",
+  "KB2736":"DXB 8137",
+  "KB2737":"DXB 8135",
+  "KB2738":"DXB 8134",
+  "KB2739":"DXB 8133",
+  "KB2740":"DXB 8139",
+  "KB2741":"DXB 8130",
+  "KB2742":"DXB 8129",
+  "KB2743":"DXB 8125",
+  "KB2744":"DXB 8124",
+  "KB2745":"DXB 8131",
+  "KB2746":"DXB 8817",
+  "KB2747":"DXB 8144",
+  "KB2748":"DXB 8145",
+  "KB2749":"DXB 8147",
+  "KB2750":"DXB 8149",
+  "KB2751":"DXB 8152",
+  "KB2752":"DXB 8153",
+  "KB2753":"DXB 8154",
+  "KB2754":"DXB 8155",
+  "KB2755":"DXB 8156",
+  "KB2756":"DXB 8157",
+  "KB2757":"DXB 8158",
+  "KB2758":"DXB 8184",
+  "KB2759":"DXB 8168",
+  "KB2760":"DXB 8159",
+  "KB2761":"DXB 8160",
+  "KB2762":"DXB 8162",
+  "KB2763":"DXB 8163",
+  "KB2764":"DXB 8172",
+  "KB2765":"DXB 8170",
+  "KB2766":"DXB 8171",
+  "KB2767":"DXB 8169",
+  "KB2768":"DXB 8187",
+  "KB2769":"DXB 8179",
+  "KB2770":"DXB 8182",
+  "KB2771":"DXB 8174",
+  "KB2772":"DXB 8183",
+  "KB2773":"DXB 8190",
+  "KB2774":"DXB 8194",
+  "KB2775":"DXB 8192",
+  "KB2776":"DXB 8175",
+  "KB2777":"DXB 8193",
+  "KB2778":"DXB 8289",
+  "KB2779":"DXB 8213",
+  "KB2780":"DXB 8198",
+  "KB2781":"DXB 8206",
+  "KB2782":"DXB 8212",
+  "KB2783":"DXB 8231",
+  "KB2784":"DXB 8301",
+  "KB2785":"DXB 8337",
+  "KB2786":"DXB 8826",
+  "KB2787":"DXB 8816",
+  "KB2788":"DXB 8242",
+  "KB2789":"DXB 8316",
+  "KB2790":"DXB 8262",
+  "KB2791":"DXB 8252",
+  "KB2792":"DXB 8248",
+  "KB2793":"DXB 8230",
+  "KB2794":"DXB 8292",
+  "KB2795":"DXB 8281",
+  "KB2796":"DXB 8266",
+  "KB2797":"DXB 8235",
+  "KB2798":"DXB 8237",
+  "KB2799":"DXB 8238",
+  "KB2800":"DXB 8341",
+  "KB2801":"DXB 8239",
+  "KB2802":"DXB 8258",
+  "KB2803":"DXB 8254",
+  "KB2804":"DXB 8241",
+  "KB2805":"DXB 8269",
+  "KB2806":"DXB 8243",
+  "KB2807":"DXB 8214",
+  "KB2808":"DXB 8215",
+  "KB2809":"DXB 8249",
+  "KB2810":"DXB 8268",
+  "KB2811":"DXB 8264",
+  "KB2812":"DXB 8286",
+  "KB2813":"DXB 8274",
+  "KB2814":"DXB 8257",
+  "KB2815":"DXB 8259",
+  "KB2816":"DXB 8251",
+  "KB2817":"DXB 8207",
+  "KB2818":"DXB 8270",
+  "KB2819":"DXB 8276",
+  "KB2820":"DXB 8354",
+  "KB2821":"DXB 8291",
+  "KB2822":"DXB 8273",
+  "KB2823":"DXB 8271",
+  "KB2824":"DXB 8284",
+  "KB2825":"DXB 8285",
+  "KB2826":"DXB 8327",
+  "KB2827":"DXB 8312",
+  "KB2828":"DXB 8342",
+  "KB2829":"DXB 8294",
+  "KB2830":"DXB 8314",
+  "KB2831":"DXB 8317",
+  "KB2832":"DXB 8283",
+  "KB2833":"DXB 8297",
+  "KB2834":"DXB 8267",
+  "KB2835":"DXB 8296",
+  "KB2836":"DXB 8827",
+  "KB2837":"DXB 8290",
+  "KB2838":"DXB 8340",
+  "KB2839":"DXB 8346",
+  "KB2840":"DXB 8275",
+  "KB2841":"DXB 8295",
+  "KB2842":"DXB 8325",
+  "KB2843":"DXB 8062",
+  "KB2844":"DXB 8219",
+  "KB2845":"DXB 8246",
+  "KB2846":"DXB 8247",
+  "KB2847":"DXB 8265",
+  "KB2848":"DXB 8345",
+  "KB2849":"DXB 8347",
+  "KB2850":"DXB 8349",
+  "KB2851":"DXB 8166",
+  "KB2852":"DXB 8177",
+  "KB2853":"DXB 8217",
+  "KB2854":"DXB 8204",
+  "KB2855":"DXB 8227",
+  "KB2856":"DXB 8205",
+  "KB2857":"DXB 8199",
+  "KB2858":"DXB 8203",
+  "KB2859":"DXB 8202",
+  "KB2860":"DXB 8201",
+  "KB2861":"DXB 8210",
+  "KB2862":"DXB 8197",
+  "KB2863":"DXB 8196",
+  "KB2864":"DXB 8189",
+  "KB2865":"DXB 8185",
+  "KB2866":"DXB 8176",
+  "KB2867":"DXB 8173",
+  "KB2868":"DXB 8195",
+  "KB2869":"DXB 8225",
+  "KB2870":"DXB 8224",
+  "KB2871":"DXB 8209",
+  "KB2872":"DXB 8223",
+  "KB2873":"DXB 8280",
+  "KB2874":"DXB 8229",
+  "KB2875":"DXB 8165",
+  "KB2876":"DXB 8167",
+  "KB2877":"DXB 8164",
+  "KB2878":"DXB 8336",
+  "KB2879":"DXB 8233",
+  "KB2880":"DXB 8335",
+  "KB2881":"DXB 8332",
+  "KB2882":"DXB 8322",
+  "KB2883":"DXB 8820",
+  "KB2884":"DXB 8320",
+  "KB2885":"DXB 8328",
+  "KB2886":"DXB 8814",
+  "KB2887":"DXB 8307",
+  "KB2888":"DXB 8353",
+  "KB2889":"DXB 8350",
+  "KB2890":"DXB 8813",
+  "KB2891":"DXB 8313",
+  "KB2892":"DXB 8822",
+  "KB2893":"DXB 8306",
+  "KB2894":"DXB 8334",
+  "KB2895":"DXB 8323",
+  "KB2896":"DXB 8226",
+  "KB2897":"DXB 8343",
+  "KB2898":"DXB 8303",
+  "KB2899":"DXB 8815",
+  "KB2900":"DXB 8348",
+  "KB2901":"DXB 8324",
+  "KB2902":"DXB 8302",
+  "KB2903":"DXB 8355",
+  "KB2904":"DXB 8298",
+  "KB2905":"DXB 8824",
+  "KB2906":"DXB 8315",
+  "KB2907":"DXB 8319",
+  "KB2908":"DXB 8326",
+  "KB2909":"DXB 8351",
+  "KB2910":"DXB 8305",
+  "KB2911":"DXB 8234",
+  "KB2912":"DXB 8255",
+  "KB2913":"DXB 8277",
+  "KB2914":"DXB 8211",
+  "KB2915":"DXB 8321",
+  "KB2916":"DXB 8244",
+  "KB2917":"DXB 8263",
+  "KB2918":"DXB 8344",
+  "KB2919":"DXB 8821",
+  "KB2920":"DXB 8260",
+  "KB2921":"DXB 8261",
+  "KB2922":"DXB 8272",
+  "KB2923":"DXB 8278",
+  "KB2924":"DXB 8823",
+  "KB2925":"DXB 8245",
+  "KB2926":"DXB 3550",
+  "KB2927":"DXB 3551",
+  "KB2928":"DXB 3552",
+  "KB2929":"DXB 3553",
+  "KB2930":"DXB 3554",
+  "KB2931":"DXB 3556",
+  "KB2932":"DXB 3557",
+  "KB2933":"DXB 3558",
+  "KB2934":"DXB 3559",
+  "KB2935":"DXB 3560",
+  "KB2936":"DXB 3561",
+  "KB2937":"DXB 3562",
+  "KB2938":"DXB 3563",
+  "KB2939":"DXB 3564",
+  "KB2940":"DXB 3565",
+  "KB2941":"DXB 3566",
+  "KB2942":"DXB 3567",
+  "KB2943":"DXB 3568",
+  "KB2944":"DXB 3569",
+  "KB2945":"DXB 3570",
+  "KB2946":"DXB 3571",
+  "KB2947":"DXB 3572",
+  "KB2948":"DXB 3573",
+  "KB2949":"DXB 3574",
+  "KB2950":"DXB 3575",
+  "KB2951":"DXB 3576",
+  "KB2952":"DXB 3577",
+  "KB2953":"DXB 3578",
+  "KB2954":"DXB 3579",
+  "KB2955":"DXB 3580",
+  "KB2956":"DXB 3581",
+  "KB2957":"DXB 3582",
+  "KB2958":"DXB 3583",
+  "KB2959":"DXB 3584",
+  "KB2960":"DXB 3585",
+  "KB2961":"DXB 3586",
+  "KB2962":"DXB 3587",
+  "KB2963":"DXB 3588",
+  "KB2964":"DXB 3589",
+  "KB2965":"DXB 3590",
+  "KB2966":"DXB 3591",
+  "KB2967":"DXB 3592",
+  "KB2968":"DXB 3593",
+  "KB2969":"DXB 3594",
+  "KB2970":"DXB 3595",
+  "KB2971":"DXB 3596",
+  "KB2972":"DXB 3597",
+  "KB2973":"DXB 3598",
+  "KB2974":"DXB 3599",
+  "KB2975":"DXB 3601",
+  "KB2976":"DXB 3602",
+  "KB2977":"DXB 3603",
+  "KB2978":"DXB 3604",
+  "KB2979":"DXB 3605",
+  "KB2980":"DXB 3606",
+  "KB2981":"DXB 3607",
+  "KB2982":"DXB 3608",
+  "KB2983":"DXB 3609",
+  "KB2984":"DXB 3610",
+  "KB2985":"DXB 3611",
+  "KB2986":"DXB 3612",
+  "KB2987":"DXB 3613",
+  "KB2988":"DXB 3614",
+  "KB2989":"DXB 3615",
+  "KB2990":"DXB 3616",
+  "KB2991":"DXB 3617",
+  "KB2992":"DXB 3618",
+  "KB2993":"DXB 3619",
+  "KB2994":"DXB 3620",
+  "KB2995":"DXB 3621",
+  "KB2996":"DXB 3622",
+  "KB2997":"DXB 3623",
+  "KB2998":"DXB 3624",
+  "KB2999":"DXB 3625",
+  "KB3000":"DXB 3626",
+  "KB3001":"DXB 3627",
+  "KB3002":"DXB 3628",
+  "KB3003":"DXB 3629",
+  "KB3004":"DXB 3630",
+  "KB3005":"DXB 3631",
+  "KB3006":"DXB 3632",
+  "KB3007":"DXB 3634",
+  "KB3008":"DXB 3635",
+  "KB3009":"DXB 3637",
+  "KB3010":"DXB 3638",
+  "KB3011":"DXB 3639",
+  "KB3012":"DXB 3640",
+  "KB3013":"DXB 3641",
+  "KB3014":"DXB 3642",
+  "KB3015":"DXB 3643",
+  "KB3016":"DXB 3644",
+  "KB3017":"DXB 3645",
+  "KB3018":"DXB 3646",
+  "KB3019":"DXB 3647",
+  "KB3020":"DXB 3648",
+  "KB3021":"DXB 3649",
+  "KB3022":"DXB 3650",
+  "KB3023":"DXB 3651",
+  "KB3024":"DXB 3652",
+  "KB3025":"DXB 3653",
+  "KB3026":"DXB 3654",
+  "KB3027":"DXB 3655",
+  "KB3028":"DXB 3656",
+  "KB3029":"DXB 3657",
+  "KB3030":"DXB 3658",
+  "KB3031":"DXB 3659",
+  "KB3032":"DXB 3660",
+  "KB3033":"DXB 3661",
+  "KB3034":"DXB 3662",
+  "KB3035":"DXB 3664",
+  "KB3036":"DXB 3665",
+  "KB3037":"DXB 3667",
+  "KB3038":"DXB 3668",
+  "KB3039":"DXB 3669",
+  "KB3040":"DXB 3670",
+  "KB3041":"DXB 3671",
+  "KB3042":"DXB 3672",
+  "KB3043":"DXB 3673",
+  "KB3044":"DXB 3674",
+  "KB3045":"DXB 3675",
+  "KB3046":"DXB 3676",
+  "KB3047":"DXB 3677",
+  "KB3048":"DXB 3678",
+  "KB3049":"DXB 3679",
+  "KB3050":"DXB 3680",
+  "KB3051":"DXB 3681",
+  "KB3052":"DXB 3682",
+  "KB3053":"DXB 3683",
+  "KB3054":"DXB 3684",
+  "KB3055":"DXB 3685",
+  "KB3056":"DXB 3686",
+  "KB3057":"DXB 3687",
+  "KB3058":"DXB 3688",
+  "KB3059":"DXB 3689",
+  "KB3060":"DXB 3690",
+  "KB3061":"DXB 3691",
+  "KB3062":"DXB 3692",
+  "KB3063":"DXB 3693",
+  "KB3064":"DXB 3694",
+  "KB3065":"DXB 3695",
+  "KB3066":"DXB 3696",
+  "KB3067":"DXB 3697",
+  "KB3068":"DXB 3698",
+  "KB3069":"DXB 3699",
+  "KB3070":"DXB 3701",
+  "KB3071":"DXB 3702",
+  "KB3072":"DXB 3703",
+  "KB3073":"DXB 3704",
+  "KB3074":"DXB 3705",
+  "KB3075":"DXB 3706",
+  "KB3076":"DXB 3707",
+  "KB3077":"DXB 3708",
+  "KB3078":"DXB 3709",
+  "KB3079":"DXB 3710",
+  "KB3080":"DXB 3711",
+  "KB3081":"DXB 10619",
+  "KB3082":"DXB 10696",
+  "KB3083":"DXB 10633",
+  "KB3084":"DXB 10626",
+  "KB3085":"DXB 10636",
+  "KB3086":"DXB 10663",
+  "KB3087":"DXB 10660",
+  "KB3088":"DXB 10661",
+  "KB3089":"DXB 10700",
+  "KB3090":"DXB 10620",
+  "KB3091":"DXB 10638",
+  "KB3092":"DXB 10628",
+  "KB3093":"DXB 10662",
+  "KB3094":"DXB 10639",
+  "KB3095":"DXB 10621",
+  "KB3096":"DXB 10818",
+  "KB3097":"DXB 10622",
+  "KB3098":"DXB 10623",
+  "KB3099":"DXB 10624",
+  "KB3100":"DXB 10625",
+  "KB3101":"DXB 10627",
+  "KB3102":"DXB 10629",
+  "KB3103":"DXB 10630",
+  "KB3104":"DXB 10631",
+  "KB3105":"DXB 10632",
+  "KB3106":"DXB 10634",
+  "KB3107":"DXB 10635",
+  "KB3108":"DXB 10637",
+  "KB3109":"DXB 10666",
+  "KB3110":"DXB 10641",
+  "KB3111":"DXB 10707",
+  "KB3112":"DXB 10669",
+  "KB3113":"DXB 10655",
+  "KB3114":"DXB 10690",
+  "KB3115":"DXB 10699",
+  "KB3116":"DXB 10693",
+  "KB3117":"DXB 10701",
+  "KB3118":"DXB 10668",
+  "KB3119":"DXB 10676",
+  "KB3120":"DXB 10657",
+  "KB3121":"DXB 10710",
+  "KB3122":"DXB 10644",
+  "KB3123":"DXB 10667",
+  "KB3124":"DXB 10654",
+  "KB3125":"DXB 10656",
+  "KB3126":"DXB 10659",
+  "KB3127":"DXB 10697",
+  "KB3128":"DXB 10688",
+  "KB3129":"DXB 10652",
+  "KB3130":"DXB 10651",
+  "KB3131":"DXB 10642",
+  "KB3132":"DXB 10809",
+  "KB3133":"DXB 10712",
+  "KB3134":"DXB 10647",
+  "KB3135":"DXB 10646",
+  "KB3136":"DXB 10640",
+  "KB3137":"DXB 10665",
+  "KB3138":"DXB 10703",
+  "KB3139":"DXB 10658",
+  "KB3140":"DXB 10691",
+  "KB3141":"DXB 10674",
+  "KB3142":"DXB 10673",
+  "KB3143":"DXB 10686",
+  "KB3144":"DXB 10848",
+  "KB3145":"DXB 10672",
+  "KB3146":"DXB 10671",
+  "KB3147":"DXB 10692",
+  "KB3148":"DXB 10677",
+  "KB3149":"DXB 10858",
+  "KB3150":"DXB 10702",
+  "KB3151":"DXB 10711",
+  "KB3152":"DXB 10833",
+  "KB3153":"DXB 10831",
+  "KB3154":"DXB 10860",
+  "KB3155":"DXB 10839",
+  "KB3156":"DXB 10648",
+  "KB3157":"DXB 10694",
+  "KB3158":"DXB 10670",
+  "KB3159":"DXB 10850",
+  "KB3160":"DXB 10680",
+  "KB3161":"DXB 10708",
+  "KB3162":"DXB 10713",
+  "KB3163":"DXB 10828",
+  "KB3164":"DXB 10813",
+  "KB3165":"DXB 10823",
+  "KB3166":"DXB 10649",
+  "KB3167":"DXB 10826",
+  "KB3168":"DXB 10645",
+  "KB3169":"DXB 10643",
+  "KB3170":"DXB 10811",
+  "KB3171":"DXB 10810",
+  "KB3172":"DXB 10830",
+  "KB3173":"DXB 10709",
+  "KB3174":"DXB 10840",
+  "KB3175":"DXB 10664",
+  "KB3176":"DXB 10653",
+  "KB3177":"DXB 10650",
+  "KB3178":"DXB 10689",
+  "KB3179":"DXB 10706",
+  "KB3180":"DXB 10704",
+  "KB3181":"DXB 10705",
+  "KB3182":"DXB 10859",
+  "KB3183":"DXB 10683",
+  "KB3184":"DXB 10820",
+  "KB3185":"DXB 10698",
+  "KB3186":"DXB 10822",
+  "KB3187":"DXB 10682",
+  "KB3188":"DXB 10825",
+  "KB3189":"DXB 10821",
+  "KB3190":"DXB 10819",
+  "KB3191":"DXB 10861",
+  "KB3192":"DXB 10816",
+  "KB3193":"DXB 10815",
+  "KB3194":"DXB 10814",
+  "KB3195":"DXB 10812",
+  "KB3196":"DXB 10824",
+  "KB3197":"DXB 10678",
+  "KB3198":"DXB 10675",
+  "KB3199":"DXB 10695",
+  "KB3200":"DXB 10817",
+  "KB3201":"DXB 10687",
+  "KB3202":"DXB 10684",
+  "KB3203":"DXB 10685",
+  "KB3204":"DXB 10681",
+  "KB3205":"DXB 10679",
+  "KB3206":"DXB 1026",
+  "KB3207":"DXB 21678",
+  "KB3208":"DXB 7877",
+  "KB3209":"DXB 8500",
+  "KB3210":"DXB 8501",
+  "KB3211":"DXB 8854",
+  "KB3212":"DXB 9081",
+  "KB3213":"DXB 9664",
+  "KB3214":"DXB 10002",
+  "KB3215":"DXB 9660",
+  "KB3216":"DXB 9661",
+  "KB3217":"DXB 9662",
+  "KB3218":"DXB 9663",
+  "KB3219":"DXB 9655",
+  "KB3220":"DXB 9657",
+  "KB3221":"DXB 9658",
+  "KB3222":"DXB 9659",
+  "KB3223":"DXB 9649",
+  "KB3224":"DXB 9650",
+  "KB3225":"DXB 9452",
+  "KB3226":"DXB 9651",
+  "KB3227":"DXB 9654",
+  "KB3228":"DXB 9643",
+  "KB3229":"DXB 9644",
+  "KB3230":"DXB 9646",
+  "KB3231":"DXB 9101",
+  "KB3232":"DXB 9411",
+  "KB3233":"DXB 9642",
+  "KB3234":"DXB 9641",
+  "KB3235":"DXB 9637",
+  "KB3236":"DXB 9640",
+  "KB3237":"DXB 9295",
+  "KB3238":"DXB 9636",
+  "KB3239":"DXB 9639",
+  "KB3240":"DXB 9635",
+  "KB3241":"DXB 9634",
+  "KB3242":"DXB 9633",
+  "KB3243":"DXB 9632",
+  "KB3244":"DXB 9630",
+  "KB3245":"DXB 9629",
+  "KB3246":"DXB 9625",
+  "KB3247":"DXB 9571",
+  "KB3248":"DXB 9358",
+  "KB3249":"DXB 9283",
+  "KB3250":"DXB 9479",
+  "KB3251":"DXB 9648",
+  "KB3252":"DXB 9548",
+  "KB3253":"DXB 9219",
+  "KB3254":"DXB 9245",
+  "KB3255":"DXB 9447",
+  "KB3256":"DXB 9389",
+  "KB3257":"DXB 9306",
+  "KB3258":"DXB 9410",
+  "KB3259":"DXB 9455",
+  "KB3260":"DXB 9502",
+  "KB3261":"DXB 9399",
+  "KB3262":"DXB 9289",
+  "KB3263":"DXB 9241",
+  "KB3264":"DXB 9300",
+  "KB3265":"DXB 9450",
+  "KB3266":"DXB 9405",
+  "KB3267":"DXB 9422",
+  "KB3268":"DXB 9401",
+  "KB3269":"DXB 9402",
+  "KB3270":"DXB 9403",
+  "KB3271":"DXB 9404",
+  "KB3272":"DXB 9418",
+  "KB3273":"DXB 9417",
+  "KB3274":"DXB 9414",
+  "KB3275":"DXB 9413",
+  "KB3276":"DXB 9409",
+  "KB3277":"DXB 9407",
+  "KB3278":"DXB 9400",
+  "KB3279":"DXB 9496",
+  "KB3280":"DXB 9419",
+  "KB3281":"DXB 9171",
+  "KB3282":"DXB 9118",
+  "KB3283":"DXB 9110",
+  "KB3284":"DXB 9114",
+  "KB3285":"DXB 9115",
+  "KB3286":"DXB 9116",
+  "KB3287":"DXB 9117",
+  "KB3288":"DXB 9628",
+  "KB3289":"DXB 9572",
+  "KB3290":"DXB 9111",
+  "KB3291":"DXB 9620",
+  "KB3292":"DXB 9112",
+  "KB3293":"DXB 9113",
+  "KB3294":"DXB 9119",
+  "KB3295":"DXB 9100",
+  "KB3296":"DXB 9194",
+  "KB3297":"DXB 9076",
+  "KB3298":"DXB 9222",
+  "KB3299":"DXB 9264",
+  "KB3300":"DXB 9224",
+  "KB3301":"DXB 9250",
+  "KB3302":"DXB 9139",
+  "KB3303":"DXB 9212",
+  "KB3304":"DXB 9339",
+  "KB3305":"DXB 9626",
+  "KB3306":"DXB 9621",
+  "KB3307":"DXB 9330",
+  "KB3308":"DXB 9622",
+  "KB3309":"DXB 9623",
+  "KB3310":"DXB 9619",
+  "KB3311":"DXB 9616",
+  "KB3312":"DXB 9555",
+  "KB3313":"DXB 9559",
+  "KB3314":"DXB 9609",
+  "KB3315":"DXB 9556",
+  "KB3316":"DXB 9611",
+  "KB3317":"DXB 9612",
+  "KB3318":"DXB 9605",
+  "KB3319":"DXB 9090",
+  "KB3320":"DXB 9617",
+  "KB3321":"DXB 9618",
+  "KB3322":"DXB 9608",
+  "KB3323":"DXB 9599",
+  "KB3324":"DXB 9614",
+  "KB3325":"DXB 9550",
+  "KB3326":"DXB 9600",
+  "KB3327":"DXB 9601",
+  "KB3328":"DXB 9615",
+  "KB3329":"DXB 9603",
+  "KB3330":"DXB 9604",
+  "KB3331":"DXB 9373",
+  "KB3332":"DXB 9590",
+  "KB3333":"DXB 9583",
+  "KB3334":"DXB 9597",
+  "KB3335":"DXB 9592",
+  "KB3336":"DXB 9554",
+  "KB3337":"DXB 9345",
+  "KB3338":"DXB 9318",
+  "KB3339":"DXB 9593",
+  "KB3340":"DXB 9332",
+  "KB3341":"DXB 9552",
+  "KB3342":"DXB 9598",
+  "KB3343":"DXB 9596",
+  "KB3344":"DXB 9613",
+  "KB3345":"DXB 9451",
+  "KB3346":"DXB 9123",
+  "KB3347":"DXB 9551",
+  "KB3348":"DXB 9595",
+  "KB3349":"DXB 9594",
+  "KB3350":"DXB 9279",
+  "KB3351":"DXB 9520",
+  "KB3352":"DXB 9077",
+  "KB3353":"DXB 9575",
+  "KB3354":"DXB 9361",
+  "KB3355":"DXB 9341",
+  "KB3356":"DXB 9511",
+  "KB3357":"DXB 9465",
+  "KB3358":"DXB 9610",
+  "KB3359":"DXB 9195",
+  "KB3360":"DXB 9238",
+  "KB3361":"DXB 9202",
+  "KB3362":"DXB 9167",
+  "KB3363":"DXB 9172",
+  "KB3364":"DXB 9209",
+  "KB3365":"DXB 9229",
+  "KB3366":"DXB 9313",
+  "KB3367":"DXB 9161",
+  "KB3368":"DXB 9070",
+  "KB3369":"DXB 9191",
+  "KB3370":"DXB 9221",
+  "KB3371":"DXB 9261",
+  "KB3372":"DXB 9234",
+  "KB3373":"DXB 9175",
+  "KB3374":"DXB 9262",
+  "KB3375":"DXB 9186",
+  "KB3376":"DXB 9255",
+  "KB3377":"DXB 9585",
+  "KB3378":"DXB 9458",
+  "KB3379":"DXB 9607",
+  "KB3380":"DXB 9591",
+  "KB3381":"DXB 9589",
+  "KB3382":"DXB 9584",
+  "KB3383":"DXB 9588",
+  "KB3384":"DXB 9587",
+  "KB3385":"DXB 9586",
+  "KB3386":"DXB 9578",
+  "KB3387":"DXB 9581",
+  "KB3388":"DXB 9580",
+  "KB3389":"DXB 9579",
+  "KB3390":"DXB 9570",
+  "KB3391":"DXB 9576",
+  "KB3392":"DXB 9574",
+  "KB3393":"DXB 9573",
+  "KB3394":"DXB 9563",
+  "KB3395":"DXB 9569",
+  "KB3396":"DXB 9568",
+  "KB3397":"DXB 9565",
+  "KB3398":"DXB 9557",
+  "KB3399":"DXB 9562",
+  "KB3400":"DXB 9561",
+  "KB3401":"DXB 9558",
+  "KB3402":"DXB 9546",
+  "KB3403":"DXB 9553",
+  "KB3404":"DXB 9549",
+  "KB3405":"DXB 9547",
+  "KB3406":"DXB 9541",
+  "KB3407":"DXB 9533",
+  "KB3408":"DXB 9532",
+  "KB3409":"DXB 9545",
+  "KB3410":"DXB 9544",
+  "KB3411":"DXB 9543",
+  "KB3412":"DXB 9535",
+  "KB3413":"DXB 9540",
+  "KB3414":"DXB 9538",
+  "KB3415":"DXB 9537",
+  "KB3416":"DXB 9531",
+  "KB3417":"DXB 9534",
+  "KB3418":"DXB 9527",
+  "KB3419":"DXB 9528",
+  "KB3420":"DXB 9529",
+  "KB3421":"DXB 9530",
+  "KB3422":"DXB 9523",
+  "KB3423":"DXB 9524",
+  "KB3424":"DXB 9525",
+  "KB3425":"DXB 9526",
+  "KB3426":"DXB 9500",
+  "KB3427":"DXB 9501",
+  "KB3428":"DXB 9503",
+  "KB3429":"DXB 9505",
+  "KB3430":"DXB 9506",
+  "KB3431":"DXB 9499",
+  "KB3432":"DXB 9521",
+  "KB3433":"DXB 9518",
+  "KB3434":"DXB 9516",
+  "KB3435":"DXB 9249",
+  "KB3436":"DXB 9386",
+  "KB3437":"DXB 9156",
+  "KB3438":"DXB 9133",
+  "KB3439":"DXB 9515",
+  "KB3440":"DXB 9522",
+  "KB3441":"DXB 9519",
+  "KB3442":"DXB 9128",
+  "KB3443":"DXB 9192",
+  "KB3444":"DXB 9206",
+  "KB3445":"DXB 9208",
+  "KB3446":"DXB 9513",
+  "KB3447":"DXB 9303",
+  "KB3448":"DXB 9302",
+  "KB3449":"DXB 9301",
+  "KB3450":"DXB 9304",
+  "KB3451":"DXB 9305",
+  "KB3452":"DXB 9307",
+  "KB3453":"DXB 9309",
+  "KB3454":"DXB 9308",
+  "KB3455":"DXB 9335",
+  "KB3456":"DXB 9514",
+  "KB3457":"DXB 9497",
+  "KB3458":"DXB 9510",
+  "KB3459":"DXB 9509",
+  "KB3460":"DXB 9508",
+  "KB3461":"DXB 9498",
+  "KB3462":"DXB 9495",
+  "KB3463":"DXB 9494",
+  "KB3464":"DXB 9493",
+  "KB3465":"DXB 9492",
+  "KB3466":"DXB 9487",
+  "KB3467":"DXB 9436",
+  "KB3468":"DXB 9439",
+  "KB3469":"DXB 9441",
+  "KB3470":"DXB 9443",
+  "KB3471":"DXB 9442",
+  "KB3472":"DXB 9454",
+  "KB3473":"DXB 9457",
+  "KB3474":"DXB 9464",
+  "KB3475":"DXB 9463",
+  "KB3476":"DXB 9461",
+  "KB3477":"DXB 9456",
+  "KB3478":"DXB 9346",
+  "KB3479":"DXB 9462",
+  "KB3480":"DXB 9420",
+  "KB3481":"DXB 9446",
+  "KB3482":"DXB 9467",
+  "KB3483":"DXB 9468",
+  "KB3484":"DXB 9469",
+  "KB3485":"DXB 9470",
+  "KB3486":"DXB 9471",
+  "KB3487":"DXB 9474",
+  "KB3488":"DXB 9473",
+  "KB3489":"DXB 9476",
+  "KB3490":"DXB 9466",
+  "KB3491":"DXB 9445",
+  "KB3492":"DXB 9444",
+  "KB3493":"DXB 9449",
+  "KB3494":"DXB 9448",
+  "KB3495":"DXB 9355",
+  "KB3496":"DXB 9286",
+  "KB3497":"DXB 9377",
+  "KB3498":"DXB 8999",
+  "KB3499":"DXB 9124",
+  "KB3500":"DXB 9379",
+  "KB3501":"DXB 9477",
+  "KB3502":"DXB 9481",
+  "KB3503":"DXB 9475",
+  "KB3504":"DXB 9491",
+  "KB3505":"DXB 9484",
+  "KB3506":"DXB 9485",
+  "KB3507":"DXB 9486",
+  "KB3508":"DXB 9482",
+  "KB3509":"DXB 9488",
+  "KB3510":"DXB 9490",
+  "KB3511":"DXB 9071",
+  "KB3512":"DXB 9072",
+  "KB3513":"DXB 9073",
+  "KB3514":"DXB 9075",
+  "KB3515":"DXB 9078",
+  "KB3516":"DXB 9082",
+  "KB3517":"DXB 9391",
+  "KB3518":"DXB 9083",
+  "KB3519":"DXB 9084",
+  "KB3520":"DXB 9085",
+  "KB3521":"DXB 9086",
+  "KB3522":"DXB 9098",
+  "KB3523":"DXB 9103",
+  "KB3524":"DXB 9095",
+  "KB3525":"DXB 9091",
+  "KB3526":"DXB 9120",
+  "KB3527":"DXB 9109",
+  "KB3528":"DXB 9108",
+  "KB3529":"DXB 9107",
+  "KB3530":"DXB 9097",
+  "KB3531":"DXB 9102",
+  "KB3532":"DXB 9105",
+  "KB3533":"DXB 9233",
+  "KB3534":"DXB 9094",
+  "KB3535":"DXB 9096",
+  "KB3536":"DXB 9106",
+  "KB3537":"DXB 9092",
+  "KB3538":"DXB 9087",
+  "KB3539":"DXB 9138",
+  "KB3540":"DXB 9088",
+  "KB3541":"DXB 9122",
+  "KB3542":"DXB 9140",
+  "KB3543":"DXB 9141",
+  "KB3544":"DXB 9142",
+  "KB3545":"DXB 9144",
+  "KB3546":"DXB 9121",
+  "KB3547":"DXB 9125",
+  "KB3548":"DXB 9127",
+  "KB3549":"DXB 9130",
+  "KB3550":"DXB 9132",
+  "KB3551":"DXB 9150",
+  "KB3552":"DXB 9292",
+  "KB3553":"DXB 9188",
+  "KB3554":"DXB 9187",
+  "KB3555":"DXB 9177",
+  "KB3556":"DXB 9185",
+  "KB3557":"DXB 9176",
+  "KB3558":"DXB 9166",
+  "KB3559":"DXB 9151",
+  "KB3560":"DXB 9210",
+  "KB3561":"DXB 9200",
+  "KB3562":"DXB 9337",
+  "KB3563":"DXB 9189",
+  "KB3564":"DXB 9180",
+  "KB3565":"DXB 9181",
+  "KB3566":"DXB 9137",
+  "KB3567":"DXB 9148",
+  "KB3568":"DXB 9157",
+  "KB3569":"DXB 9179",
+  "KB3570":"DXB 9135",
+  "KB3571":"DXB 9136",
+  "KB3572":"DXB 9145",
+  "KB3573":"DXB 9149",
+  "KB3574":"DXB 9154",
+  "KB3575":"DXB 9155",
+  "KB3576":"DXB 9168",
+  "KB3577":"DXB 9164",
+  "KB3578":"DXB 9163",
+  "KB3579":"DXB 9160",
+  "KB3580":"DXB 9158",
+  "KB3581":"DXB 9173",
+  "KB3582":"DXB 9193",
+  "KB3583":"DXB 9196",
+  "KB3584":"DXB 9197",
+  "KB3585":"DXB 9199",
+  "KB3586":"DXB 9201",
+  "KB3587":"DXB 9204",
+  "KB3588":"DXB 9205",
+  "KB3589":"DXB 9207",
+  "KB3590":"DXB 9214",
+  "KB3591":"DXB 9215",
+  "KB3592":"DXB 9216",
+  "KB3593":"DXB 9218",
+  "KB3594":"DXB 9225",
+  "KB3595":"DXB 9174",
+  "KB3596":"DXB 6914",
+  "KB3597":"DXB 8208",
+  "KB3598":"DXB 8988",
+  "KB3599":"DXB 8989",
+  "KB3600":"DXB 9067",
+  "KB3601":"DXB 9227",
+  "KB3602":"DXB 9265",
+  "KB3603":"DXB 9226",
+  "KB3604":"DXB 9228",
+  "KB3605":"DXB 9232",
+  "KB3606":"DXB 9235",
+  "KB3607":"DXB 9236",
+  "KB3608":"DXB 9237",
+  "KB3609":"DXB 9239",
+  "KB3610":"DXB 9240",
+  "KB3611":"DXB 9242",
+  "KB3612":"DXB 9243",
+  "KB3613":"DXB 9244",
+  "KB3614":"DXB 9246",
+  "KB3615":"DXB 9247",
+  "KB3616":"DXB 9281",
+  "KB3617":"DXB 9260",
+  "KB3618":"DXB 9248",
+  "KB3619":"DXB 9252",
+  "KB3620":"DXB 9254",
+  "KB3621":"DXB 9287",
+  "KB3622":"DXB 9258",
+  "KB3623":"DXB 9266",
+  "KB3624":"DXB 9267",
+  "KB3625":"DXB 9273",
+  "KB3626":"DXB 9282",
+  "KB3627":"DXB 9275",
+  "KB3628":"DXB 9269",
+  "KB3629":"DXB 9271",
+  "KB3630":"DXB 9272",
+  "KB3631":"DXB 9276",
+  "KB3632":"DXB 9268",
+  "KB3633":"DXB 9256",
+  "KB3634":"DXB 9278",
+  "KB3635":"DXB 9253",
+  "KB3636":"DXB 9284",
+  "KB3637":"DXB 9369",
+  "KB3638":"DXB 9285",
+  "KB3639":"DXB 9288",
+  "KB3640":"DXB 9290",
+  "KB3641":"DXB 9291",
+  "KB3642":"DXB 9293",
+  "KB3643":"DXB 9294",
+  "KB3644":"DXB 9296",
+  "KB3645":"DXB 9298",
+  "KB3646":"DXB 9299",
+  "KB3647":"DXB 9311",
+  "KB3648":"DXB 9314",
+  "KB3649":"DXB 9319",
+  "KB3650":"DXB 9320",
+  "KB3651":"DXB 9316",
+  "KB3652":"DXB 9317",
+  "KB3653":"DXB 9315",
+  "KB3654":"DXB 9321",
+  "KB3655":"DXB 9322",
+  "KB3656":"DXB 9323",
+  "KB3657":"DXB 9324",
+  "KB3658":"DXB 9325",
+  "KB3659":"DXB 9326",
+  "KB3660":"DXB 9327",
+  "KB3661":"DXB 9367",
+  "KB3662":"DXB 9328",
+  "KB3663":"DXB 9329",
+  "KB3664":"DXB 9388",
+  "KB3665":"DXB 9331",
+  "KB3666":"DXB 9334",
+  "KB3667":"DXB 9340",
+  "KB3668":"DXB 9343",
+  "KB3669":"DXB 9347",
+  "KB3670":"DXB 9348",
+  "KB3671":"DXB 9349",
+  "KB3672":"DXB 9350",
+  "KB3673":"DXB 9351",
+  "KB3674":"DXB 9354",
+  "KB3675":"DXB 9356",
+  "KB3676":"DXB 9360",
+  "KB3677":"DXB 9362",
+  "KB3678":"DXB 9363",
+  "KB3679":"DXB 9366",
+  "KB3680":"DXB 9440",
+  "KB3681":"DXB 9438",
+  "KB3682":"DXB 9437",
+  "KB3683":"DXB 9434",
+  "KB3684":"DXB 9433",
+  "KB3685":"DXB 9432",
+  "KB3686":"DXB 9428",
+  "KB3687":"DXB 9431",
+  "KB3688":"DXB 9430",
+  "KB3689":"DXB 9429",
+  "KB3690":"DXB 9427",
+  "KB3691":"DXB 9425",
+  "KB3692":"DXB 9424",
+  "KB3693":"DXB 9423",
+  "KB3694":"DXB 9421",
+  "KB3695":"DXB 9397",
+  "KB3696":"DXB 9396",
+  "KB3697":"DXB 9395",
+  "KB3698":"DXB 9394",
+  "KB3699":"DXB 9392",
+  "KB3700":"DXB 9390",
+  "KB3701":"DXB 9371",
+  "KB3702":"DXB 9372",
+  "KB3703":"DXB 9374",
+  "KB3704":"DXB 9378",
+  "KB3705":"DXB 9381",
+  "KB3706":"DXB 9382",
+  "KB3707":"DXB 9387",
+  "KB3708":"DXB 8588",
+  "KB3709":"DXB 8600",
+  "KB3710":"DXB 9673",
+  "KB3711":"DXB 9674",
+  "KB3712":"DXB 9675",
+  "KB3713":"DXB 9676",
+  "KB3714":"DXB 9677",
+  "KB3715":"DXB 9678",
+  "KB3716":"DXB 9680",
+  "KB3717":"DXB 9681",
+  "KB3718":"DXB 9728",
+  "KB3719":"DXB 9724",
+  "KB3720":"DXB 9725",
+  "KB3721":"DXB 9729",
+  "KB3722":"DXB 9730",
+  "KB3723":"DXB 9734",
+  "KB3724":"DXB 9736",
+  "KB3725":"DXB 9737",
+  "KB3726":"DXB 9731",
+  "KB3727":"DXB 9740",
+  "KB3728":"DXB 9708",
+  "KB3729":"DXB 9709",
+  "KB3730":"DXB 9710",
+  "KB3731":"DXB 9711",
+  "KB3732":"DXB 9713",
+  "KB3733":"DXB 9714",
+  "KB3734":"DXB 9744",
+  "KB3735":"DXB 9717",
+  "KB3736":"DXB 9719",
+  "KB3737":"DXB 9370",
+  "KB3738":"DXB 9380",
+  "KB3739":"DXB 9375",
+  "KB3740":"DXB 9694",
+  "KB3741":"DXB 9696",
+  "KB3742":"DXB 9697",
+  "KB3743":"DXB 9699",
+  "KB3744":"DXB 9702",
+  "KB3745":"DXB 9701",
+  "KB3746":"DXB 9703",
+  "KB3747":"DXB 9704",
+  "KB3748":"DXB 9722",
+  "KB3749":"DXB 9705",
+  "KB3750":"DXB 9707",
+  "KB3751":"DXB 9706",
+  "KB3752":"DXB 9682",
+  "KB3753":"DXB 9684",
+  "KB3754":"DXB 9685",
+  "KB3755":"DXB 9686",
+  "KB3756":"DXB 9687",
+  "KB3757":"DXB 9688",
+  "KB3758":"DXB 9689",
+  "KB3759":"DXB 9690",
+  "KB3760":"DXB 9692",
+  "KB3761":"DXB 9715",
+  "KB3762":"DXB 9716",
+  "KB3763":"DXB 9718",
+  "KB3764":"DXB 9721",
+  "KB3765":"DXB 9723",
+  "KB3766":"DXB 9732",
+  "KB3767":"DXB 9745",
+  "KB3768":"DXB 9735",
+  "KB3769":"DXB 9733",
+  "KB3770":"DXB 9739",
+  "KB3771":"DXB 9741",
+  "KB3772":"DXB 9742",
+  "KB3773":"DXB 9743",
+  "KB3774":"DXB 9747",
+  "KB3775":"DXB 9748",
+  "KB3776":"DXB 9749",
+  "KB3777":"DXB 9750",
+  "KB3778":"DXB 9751",
+  "KB3779":"DXB 9752",
+  "KB3780":"DXB 9755",
+  "KB3781":"DXB 9756",
+  "KB3782":"DXB 9757",
+  "KB3783":"DXB 9758",
+  "KB3784":"DXB 9759",
+  "KB3785":"DXB 9760",
+  "KB3786":"DXB 9770",
+  "KB3787":"DXB 9766",
+  "KB3788":"DXB 9784",
+  "KB3789":"DXB 9785",
+  "KB3790":"DXB 9779",
+  "KB3791":"DXB 9783",
+  "KB3792":"DXB 9772",
+  "KB3793":"DXB 9773",
+  "KB3794":"DXB 9778",
+  "KB3795":"DXB 9782",
+  "KB3796":"DXB 9761",
+  "KB3797":"DXB 9762",
+  "KB3798":"DXB 9767",
+  "KB3799":"DXB 9768",
+  "KB3800":"DXB 9769",
+  "KB3801":"DXB 9775",
+  "KB3802":"DXB 9774",
+  "KB3803":"DXB 9763",
+  "KB3804":"DXB 9764",
+  "KB3805":"DXB 9765",
+};
+
+var FINECODES = [
+  {code:'INF01',desc:'MISBEHAVIOUR OR ABUSE THE STAFF / PUBLIC',severity:'Major'},
+  {code:'INF02',desc:'LATE LOGIN',severity:'Minor'},
+  {code:'INF03',desc:'NOT WORKING AS PER THE ASSIGNED DUTY HOURS / TRIPS',severity:'Moderate'},
+  {code:'INF04',desc:'NOT ADHERING TO UNIFORM STANDARDS / PERSONAL HYGIENE',severity:'Moderate'},
+  {code:'INF05',desc:'UNAUTHORISED PARKING',severity:'Minor'},
+  {code:'INF06',desc:'BLACK TRIP - TRANSPORT PASSENGERS WITHOUT STARTING THE METER',severity:'Major'},
+  {code:'INF07',desc:'BLAMEWORTHY ACCIDENT',severity:'Moderate'},
+  {code:'INF08',desc:'VEHICLE REPAIRED AT UNAUTHORISED WORKSHOP',severity:'Major'},
+  {code:'INF09',desc:'FAILURE TO KEEP THE VEHICLE CLEAN FROM INSIDE / OUTSIDE',severity:'Minor'},
+  {code:'INF10',desc:'MDVR & ITS ATTACHED DEVICE TAMPERED',severity:'Major'},
+  {code:'INF11',desc:'FUEL RECOVERY DUE TO VEHICLE IDLING',severity:'Moderate'},
+  {code:'INF12',desc:'VEHICLE NOT REPORTED FOR VALET SERVICE',severity:'Minor'},
+  {code:'INF13',desc:'EXCEEDED THE APPROVED LOG OFF KM',severity:'Moderate'},
+  {code:'INF14',desc:'SPEED DEVICE TAMPERED',severity:'Major'},
+  {code:'INF15',desc:'SEIZURE / ACQUISITION OF THE LOST / FOUND',severity:'Moderate'},
+  {code:'INF16',desc:'MANIPULATE / TAMPER THE METER & ITS DEVICES INSTALLED IN VEHICLE',severity:'Major'},
+  {code:'INF17',desc:'COMPANY ASSIGNED ASSET DAMAGE / LOST',severity:'Major'},
+  {code:'INF18',desc:'NOT ADHERING TO ROAD SPEED LIMIT / RECKLESS DRIVING',severity:'Moderate'},
+  {code:'INF19',desc:'NOT REPORTING WITHOUT HANDOVER OF VEHICLE',severity:'Moderate'},
+  {code:'INF20',desc:'GPS DEVICE TAMPERED',severity:'Major'},
+  {code:'INF21',desc:'MANIPULATE / TAMPER THE CAMERA & ITS DEVICES INSTALLED IN VEHICLE',severity:'Major'},
+  {code:'INF22',desc:'EATING, DRINKING / SLEEPING INSIDE VEHICLE DURING WORKING HOURS',severity:'Minor'},
+  {code:'INF23',desc:'SPEAK / USE MOBILE PHONE WHILE DRIVING WITHOUT USING AN EARPHONE',severity:'Moderate'},
+  {code:'INF24',desc:'ACQUISITION / USE OF ALCOHOL / SUBSTANCES HARMFUL TO THE MIND',severity:'Minor'},
+  {code:'INF25',desc:'CAREEM BLACK TRIP',severity:'Major'},
+  {code:'INF26',desc:'PICK-UP CUSTOMER FROM UNAUTHORIZED LOCATION',severity:'Moderate'},
+  {code:'INF27',desc:'CAREEM - ACCEPTANCE & AVAILABILITY',severity:'Moderate'},
+  {code:'INF28',desc:'REFUSE TO PICK UP CUSTOMERS',severity:'Major'},
+  {code:'INF29',desc:'WHEEL CAP MISSING',severity:'Moderate'},
+  {code:'INF30',desc:'DRIVING DAMAGED VEHICLES',severity:'Moderate'},
+  {code:'INF31',desc:'ACQUISITION / USE OF CIGARETTE, NASWAR, TOBACCO',severity:'Minor'},
+  {code:'INF32',desc:'NOT REPORTED-VEHICLE RECOVERED FROM INSIDE DUBAI',severity:'Moderate'},
+  {code:'INF33',desc:'NOT REPORTED-VEHICLE RECOVERED FROM OUTSIDE DUBAI',severity:'Moderate'},
+  {code:'INF34',desc:'ANNUAL LEAVE OVERSTAY PENALTY (16-30 DAYS)',severity:'Moderate'},
+  {code:'INF35',desc:'ANNUAL LEAVE OVERSTAY PENALTY (31-45 DAYS)',severity:'Moderate'},
+  {code:'INF36',desc:'ANNUAL LEAVE OVERSTAY PENALTY (46-60 DAYS)',severity:'Moderate'},
+  {code:'INF37',desc:'ANNUAL LEAVE OVERSTAY PENALTY (61+ DAYS)',severity:'Moderate'},
+  {code:'INF38',desc:'EMERGENCY LEAVE OVERSTAY PENALTY (16-30 DAYS)',severity:'Moderate'},
+  {code:'INF39',desc:'EMERGENCY LEAVE OVERSTAY PENALTY (31-45 DAYS)',severity:'Moderate'},
+  {code:'INF40',desc:'EMERGENCY LEAVE OVERSTAY PENALTY (46-60 DAYS)',severity:'Moderate'},
+  {code:'INF41',desc:'EMERGENCY LEAVE OVERSTAY PENALTY (61+ DAYS)',severity:'Moderate'},
+  {code:'INF42',desc:'NOT WORKING FOR SINGLE OR MULTIPLE DAYS',severity:'Moderate'},
+  {code:'INF43',desc:'IDLE ENGINE - SIGNED IN BUT IDLE AT A LOCATION, VEHICLE NOT MOVING',severity:'Moderate'},
+  {code:'INF44',desc:'METER CARD LOST',severity:'Minor'},
+  {code:'INF45',desc:'IDENTIFIED METER/SHIFT FORGERY CASE',severity:'Major'}
+];
+
+// ── API CALL ──
+function api(params, cb) {
+  var url = API + '?' + Object.keys(params).map(function(k){
+    return k + '=' + encodeURIComponent(typeof params[k]==='object'?JSON.stringify(params[k]):params[k]);
+  }).join('&');
+  fetch(url)
+    .then(function(r){return r.json();})
+    .then(function(d){cb(null,d);})
+    .catch(function(e){cb(e,null);});
+}
+
+// ── LOGIN ──
+function doLogin() {
+  var u = document.getElementById('loginUser').value.trim().toLowerCase();
+  var p = document.getElementById('loginPass').value;
+  if (!u || !p) { showErr('Please enter username and password'); return; }
+  document.getElementById('loginLoading').style.display = 'block';
+  document.getElementById('loginErr').style.display = 'none';
+  api({action:'read', sheet:'Users'}, function(err, res) {
+    document.getElementById('loginLoading').style.display = 'none';
+    if (err || !res || !res.data) { showErr('Connection error. Try again.'); return; }
+    var found = res.data.find(function(x){ return x.username.toLowerCase()===u && x.password===p; });
+    if (!found) { showErr('Invalid username or password'); return; }
+    currentUser = found;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appShell').style.display = 'flex';
+    document.getElementById('topUser').textContent = found.name;
+    var badge = document.getElementById('topBadge');
+    badge.textContent = found.role.toUpperCase();
+    badge.className = 'tb-badge' + (found.role==='Grand Master'?' gm':found.role==='Master'?'':' user');
+    if (found.role==='Master') {
+      document.querySelectorAll('.monly').forEach(function(el){el.classList.add('show');});
+    }
+    populateVtypeSelects();
+    loadAll();
+  });
+}
+function showErr(msg){document.getElementById('loginErr').textContent='❌ '+msg;document.getElementById('loginErr').style.display='block';}
+function doLogout(){currentUser=null;document.getElementById('loginScreen').style.display='flex';document.getElementById('appShell').style.display='none';document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';}
+document.addEventListener('DOMContentLoaded',function(){document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});});
+
+// ── NAV ──
+function goTo(id, el) {
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  var s = document.getElementById('screen-'+id);
+  if (s) s.classList.add('active');
+  if (el) el.classList.add('active');
+  var titles = {dashboard:'Dashboard',pending:'Pending Tasks',driver:'Driver Search',callrecord:'Call Record',counselling:'Counselling Record',violations:'Violation Register',fines:'Fine Upload Queue',users:'User Management',settings:'Settings'};
+  document.getElementById('pageTitle').textContent = titles[id]||id;
+  if (id==='pending') renderPending();
+  if (id==='fines') renderFines();
+  if (id==='violations') renderViolations();
+  if (id==='callrecord') renderCalls();
+  if (id==='counselling') renderCounsel();
+  if (id==='users') renderUsers();
+  if (id==='settings') renderSettings();
+}
+
+// ── MODALS ──
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ── LOAD ALL DATA ──
+function loadAll() {
+  var sheets = ['Tasks','Calls','Counselling','Violations','Fines'];
+  sheets.forEach(function(s) {
+    api({action:'read',sheet:s}, function(err,res){
+      if (!err && res && res.data) {
+        DB[s.toLowerCase()] = res.data;
+        if (s==='Tasks') refreshDashboard();
+      }
+    });
+  });
+  // Load fine amounts from localStorage
+  var stored = localStorage.getItem('fineAmounts');
+  if (stored) fineAmounts = JSON.parse(stored);
+}
+
+// ── AUTO-FILL ──
+function autoFillKB(prefix) {
+  var kb = document.getElementById(prefix+'-kb').value.trim().toUpperCase();
+  var plate = VEHICLES[kb] || '';
+  var plateEl = document.getElementById(prefix+'-plate');
+  if (plateEl) plateEl.value = plate;
+}
+function autoFillFineCode(prefix) {
+  var vtype = document.getElementById(prefix+'-vtype').value;
+  var fc = FINECODES.find(function(f){return f.desc===vtype;});
+  if (fc) {
+    var el = document.getElementById(prefix+'-fcode');
+    if (el) el.value = fc.code;
+    var amt = fineAmounts[fc.code] || 0;
+    var amtEl = document.getElementById(prefix+'-famt');
+    if (amtEl) amtEl.value = amt;
+  }
+}
+function populateVtypeSelects() {
+  var selects = ['t-vtype','cc-fcode'];
+  var taskSel = document.getElementById('t-vtype');
+  if (taskSel) {
+    taskSel.innerHTML = '<option value="">— Select violation —</option>';
+    FINECODES.forEach(function(fc){
+      var o = document.createElement('option');
+      o.value = fc.desc; o.textContent = fc.code + ' — ' + fc.desc.substring(0,50);
+      taskSel.appendChild(o);
+    });
+  }
+  var fcodeSel = document.getElementById('cc-fcode');
+  if (fcodeSel) {
+    fcodeSel.innerHTML = '<option value="">— Select —</option>';
+    FINECODES.forEach(function(fc){
+      var o = document.createElement('option');
+      o.value = fc.code; o.textContent = fc.code + ' — ' + fc.desc.substring(0,45);
+      fcodeSel.appendChild(o);
+    });
+  }
+}
+function toggleFineRow(){
+  var val = document.getElementById('cc-fupload').value;
+  document.getElementById('cc-finerow').style.display = val==='Yes'?'grid':'none';
+}
+
+// ── SUBMIT TASK ──
+function submitTask() {
+  var kb = document.getElementById('t-kb').value.trim().toUpperCase();
+  var did = document.getElementById('t-did').value.trim();
+  var vtype = document.getElementById('t-vtype').value;
+  var date = document.getElementById('t-date').value;
+  if (!kb||!did||!vtype||!date) { alert('Please fill KB Number, Driver ID, Violation Type and Date'); return; }
+  var plate = VEHICLES[kb]||'';
+  var fc = FINECODES.find(function(f){return f.desc===vtype;});
+  var task = {
+    id: Date.now(), did: did, ct: kb, plate: plate,
+    shift: document.getElementById('t-shift').value,
+    vtype: vtype, fcode: fc?fc.code:'',
+    famt: document.getElementById('t-famt').value||0,
+    days: document.getElementById('t-days').value||'',
+    date: date, time: document.getElementById('t-time').value,
+    remarks: document.getElementById('t-remarks').value,
+    status: 'Suspended', createdBy: currentUser.name,
+    createdAt: new Date().toISOString()
+  };
+  var viol = {
+    id: 'VIO-'+(DB.violations.length+1).toString().padStart(4,'0'),
+    did: did, ct: kb, vtype: vtype, date: date,
+    days: task.days, fine: task.famt, letter: 'Pending',
+    status: 'In Progress', createdAt: new Date().toISOString()
+  };
+  api({action:'write',sheet:'Tasks',data:task}, function(err,res){
+    if (err) { alert('Error saving task'); return; }
+    api({action:'write',sheet:'Violations',data:viol}, function(){});
+    DB.tasks.push(task);
+    DB.violations.push(viol);
+    closeModal('taskModal');
+    clearForm(['t-kb','t-plate','t-did','t-fcode','t-famt','t-days','t-remarks']);
+    document.getElementById('t-vtype').value='';
+    document.getElementById('t-shift').value='';
+    refreshDashboard();
+    renderPending();
+    alert('✅ Task created successfully!');
+  });
+}
+
+// ── SUBMIT CALL ──
+function submitCall() {
+  var kb = document.getElementById('c-kb').value.trim().toUpperCase();
+  var did = document.getElementById('c-did').value.trim();
+  var reason = document.getElementById('c-reason').value;
+  if (!kb||!reason) { alert('Please fill KB Number and Reason'); return; }
+  var call = {
+    id: Date.now(), time: new Date().toLocaleTimeString(), did: did, ct: kb,
+    reason: reason, answered: document.getElementById('c-answered').value,
+    response: document.getElementById('c-response').value,
+    remarks: document.getElementById('c-remarks').value,
+    by: currentUser.name, createdAt: new Date().toISOString()
+  };
+  api({action:'write',sheet:'Calls',data:call}, function(err){
+    if (err) { alert('Error saving call'); return; }
+    DB.calls.push(call);
+    closeModal('callModal');
+    clearForm(['c-kb','c-did','c-remarks']);
+    document.getElementById('c-reason').value='';
+    document.getElementById('c-answered').value='';
+    document.getElementById('c-response').value='';
+    renderCalls();
+    alert('✅ Call recorded!');
+  });
+}
+
+// ── SUBMIT COUNSELLING ──
+function submitCounsel() {
+  var kb = document.getElementById('cc-kb').value.trim().toUpperCase();
+  var did = document.getElementById('cc-did').value.trim();
+  var vtype = document.getElementById('cc-vtype').value;
+  if (!kb||!vtype) { alert('Please fill KB Number and Violation Type'); return; }
+  var fine = document.getElementById('cc-fine').value||0;
+  var fupload = document.getElementById('cc-fupload').value;
+  var rec = {
+    id: Date.now(), date: new Date().toLocaleDateString(), did: did, ct: kb,
+    vtype: vtype, days: document.getElementById('cc-days').value||'',
+    letter: document.getElementById('cc-letter').value,
+    fine: fine, lifted: document.getElementById('cc-lifted').value,
+    fupload: fupload, fcode: document.getElementById('cc-fcode').value,
+    fdate: document.getElementById('cc-fdate').value,
+    notes: document.getElementById('cc-notes').value,
+    by: currentUser.name, createdAt: new Date().toISOString()
+  };
+  api({action:'write',sheet:'Counselling',data:rec}, function(err){
+    if (err) { alert('Error saving record'); return; }
+    DB.counselling.push(rec);
+    if (fupload==='Yes' && fine>0) {
+      var fdate = document.getElementById('cc-fdate').value;
+      var fd = fdate ? new Date(fdate) : new Date();
+      var dateStr = fd.getFullYear().toString() + String(fd.getMonth()+1).padStart(2,'0') + String(fd.getDate()).padStart(2,'0');
+      var seq = (DB.fines.filter(function(f){return f.fno&&f.fno.startsWith(dateStr);}).length+1).toString().padStart(3,'0');
+      var fineRec = {
+        id: Date.now()+1, fno: dateStr+seq, did: did, ct: kb,
+        plate: VEHICLES[kb]||'', vtype: vtype,
+        code: document.getElementById('cc-fcode').value,
+        amount: fine, datetime: fdate?fdate.replace('T',' '):new Date().toLocaleString(),
+        status: 'Pending', createdAt: new Date().toISOString()
+      };
+      api({action:'write',sheet:'Fines',data:fineRec}, function(){});
+      DB.fines.push(fineRec);
+    }
+    var t = DB.tasks.find(function(x){return x.ct===kb && x.status!=='Cleared';});
+    if (t) {
+      t.status = fupload==='Yes'?'Fine Pending':'Cleared';
+      api({action:'update',sheet:'Tasks',id:t.id,data:{status:t.status}}, function(){});
+    }
+    closeModal('counselModal');
+    clearForm(['cc-kb','cc-did','cc-days','cc-fine','cc-notes']);
+    document.getElementById('cc-vtype').value='';
+    document.getElementById('cc-letter').value='';
+    document.getElementById('cc-fupload').value='No';
+    document.getElementById('cc-finerow').style.display='none';
+    renderCounsel();
+    refreshDashboard();
+    alert('✅ Counselling record saved!');
+  });
+}
+
+// ── TASK STATUS ──
+function updateStatus(id, status) {
+  var t = DB.tasks.find(function(x){return String(x.id)===String(id);});
+  if (!t) return;
+  t.status = status;
+  api({action:'update',sheet:'Tasks',id:id,data:{status:status}}, function(err){
+    if (!err) { renderPending(); refreshDashboard(); }
+  });
+}
+function revokeTask(id) {
+  if (!currentUser||currentUser.role!=='Master'){alert('Master access required');return;}
+  if (!confirm('Revoke this task back to Pending?')) return;
+  updateStatus(id,'Suspended');
+  alert('Task revoked to Suspended');
+}
+
+// ── RENDER DASHBOARD ──
+function refreshDashboard() {
+  var pending = DB.tasks.filter(function(t){return t.status!=='Cleared';}).length;
+  var fines = DB.fines.filter(function(f){return f.status==='Pending';}).length;
+  var today = new Date().toLocaleDateString();
+  var cleared = DB.tasks.filter(function(t){return t.status==='Cleared';}).length;
+  document.getElementById('s-pending').textContent = pending;
+  document.getElementById('s-fines').textContent = fines;
+  document.getElementById('s-cleared').textContent = cleared;
+  document.getElementById('s-total').textContent = DB.violations.length;
+  var recent = DB.tasks.filter(function(t){return t.status!=='Cleared';}).slice(-8).reverse();
+  var html = recent.length ?
+    '<table class="tbl"><thead><tr><th>Driver ID</th><th>KB Num</th><th>Violation</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody>' +
+    recent.map(function(t){
+      var b = t.status==='Suspended'?'danger':t.status==='Reported'?'pending':'info';
+      return '<tr><td>'+t.did+'</td><td>'+t.ct+'</td><td>'+t.vtype.substring(0,40)+'...</td><td>'+t.date+'</td><td><span class="badge '+b+'">'+t.status+'</span></td><td><button class="btn sm primary" onclick="goTo(\'pending\',document.querySelectorAll(\'.nav-item\')[1])">Open</button></td></tr>';
+    }).join('') + '</tbody></table>'
+    : '<div style="text-align:center;padding:20px;color:var(--text3)">✅ No pending tasks</div>';
+  document.getElementById('dash-content').innerHTML = html;
+}
+
+// ── RENDER PENDING ──
+function renderPending() {
+  var search = (document.getElementById('pendSearch')||{}).value||'';
+  var tab = currentTab;
+  var filtered = DB.tasks.filter(function(t){
+    var matchTab = tab==='all'||t.status===tab;
+    var matchSearch = !search || t.did.includes(search)||t.ct.toLowerCase().includes(search.toLowerCase());
+    return matchTab && matchSearch;
+  });
+  var html = filtered.length ?
+    '<table class="tbl"><thead><tr><th>Driver ID</th><th>KB Num</th><th>Plate</th><th>Violation</th><th>Code</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>' +
+    filtered.map(function(t){
+      var b = t.status==='Suspended'?'danger':t.status==='Reported'?'pending':t.status==='Fine Pending'?'info':t.status==='Cleared'?'done':'pending';
+      var actions = '';
+      if (t.status==='Suspended') actions='<button class="btn sm warn" onclick="updateStatus('+t.id+',\'Reported\')">Reported</button>';
+      else if (t.status==='Reported') actions='<button class="btn sm success" onclick="updateStatus('+t.id+',\'Cleared\')">Clear</button>';
+      else if (t.status==='Fine Pending') actions='<button class="btn sm success" onclick="updateStatus('+t.id+',\'Cleared\')">Clear</button>';
+      if (t.status==='Cleared'&&currentUser&&currentUser.role==='Master') actions='<button class="btn sm danger" onclick="revokeTask('+t.id+')">Revoke</button>';
+      return '<tr><td>'+t.did+'</td><td>'+t.ct+'</td><td>'+(t.plate||'—')+'</td><td>'+t.vtype.substring(0,35)+'...</td><td>'+(t.fcode||'—')+'</td><td>'+(t.famt?'AED '+t.famt:'—')+'</td><td><span class="badge '+b+'">'+t.status+'</span></td><td>'+actions+'</td></tr>';
+    }).join('') + '</tbody></table>'
+    : '<div style="text-align:center;padding:20px;color:var(--text3)">No tasks found</div>';
+  document.getElementById('pending-content').innerHTML = html;
+}
+function setTab(tab,el){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  if(el)el.classList.add('active');
+  renderPending();
+}
+
+// ── RENDER CALLS ──
+function renderCalls() {
+  var html = DB.calls.length ?
+    '<table class="tbl"><thead><tr><th>Time</th><th>Driver ID</th><th>KB</th><th>Reason</th><th>Answered</th><th>Response</th><th>By</th></tr></thead><tbody>' +
+    DB.calls.slice().reverse().map(function(c){
+      var ab = c.answered==='Yes'?'done':c.answered==='No'?'danger':'pending';
+      return '<tr><td>'+c.time+'</td><td>'+c.did+'</td><td>'+c.ct+'</td><td>'+c.reason+'</td><td><span class="badge '+ab+'">'+(c.answered||'—')+'</span></td><td>'+(c.response||'—')+'</td><td>'+c.by+'</td></tr>';
+    }).join('') + '</tbody></table>'
+    : '<div style="text-align:center;padding:20px;color:var(--text3)">No call records yet</div>';
+  document.getElementById('call-content').innerHTML = html;
+}
+
+// ── RENDER COUNSELLING ──
+function renderCounsel() {
+  var html = DB.counselling.length ?
+    '<table class="tbl"><thead><tr><th>Date</th><th>Driver ID</th><th>KB</th><th>Violation</th><th>Days</th><th>Letter</th><th>Fine</th><th>By</th></tr></thead><tbody>' +
+    DB.counselling.slice().reverse().map(function(c){
+      var lb = c.letter==='Yes'?'done':c.letter==='No'?'pending':'danger';
+      return '<tr><td>'+c.date+'</td><td>'+c.did+'</td><td>'+c.ct+'</td><td>'+c.vtype+'</td><td>'+(c.days||'—')+'</td><td><span class="badge '+lb+'">'+(c.letter||'—')+'</span></td><td>'+(c.fine?'AED '+c.fine:'—')+'</td><td>'+c.by+'</td></tr>';
+    }).join('') + '</tbody></table>'
+    : '<div style="text-align:center;padding:20px;color:var(--text3)">No counselling records yet</div>';
+  document.getElementById('counsel-content').innerHTML = html;
+}
+
+// ── RENDER VIOLATIONS ──
+function renderViolations() {
+  var search = (document.getElementById('violSearch')||{}).value||'';
+  var filtered = DB.violations.filter(function(v){
+    return !search || v.did.includes(search)||v.ct.toLowerCase().includes(search.toLowerCase())||v.vtype.toLowerCase().includes(search.toLowerCase());
+  });
+  var html = filtered.length ?
+    '<table class="tbl"><thead><tr><th>#</th><th>Driver ID</th><th>KB</th><th>Violation</th><th>Date</th><th>Days</th><th>Fine</th><th>Letter</th><th>Status</th></tr></thead><tbody>' +
+    filtered.map(function(v){
+      var sb = v.status==='Complete'?'done':v.status==='In Progress'?'info':'pending';
+      var lb = v.letter==='Signed'?'done':'pending';
+      return '<tr><td>'+v.id+'</td><td>'+v.did+'</td><td>'+v.ct+'</td><td>'+v.vtype.substring(0,35)+'...</td><td>'+(v.date||'—')+'</td><td>'+(v.days||'—')+'</td><td>'+(v.fine?'AED '+v.fine:'—')+'</td><td><span class="badge '+lb+'">'+(v.letter||'—')+'</span></td><td><span class="badge '+sb+'">'+v.status+'</span></td></tr>';
+    }).join('') + '</tbody></table>'
+    : '<div style="text-align:center;padding:20px;color:var(--text3)">No violations yet</div>';
+  document.getElementById('viol-content').innerHTML = html;
+}
+function exportViolations(){alert('Export coming in next update!');}
+
+// ── RENDER FINES ──
+function renderFines() {
+  var pending = DB.fines.filter(function(f){return f.status==='Pending';});
+  var total = pending.reduce(function(s,f){return s+parseFloat(f.amount||0);},0);
+  document.getElementById('fine-summary').textContent = pending.length+' pending · AED '+total.toLocaleString()+' total';
+  var html = DB.fines.length ?
+    '<table class="tbl"><thead><tr><th>Fine No.</th><th>Driver ID</th><th>KB</th><th>Plate</th><th>Violation</th><th>Code</th><th>Amount</th><th>Date & Time</th><th>Status</th></tr></thead><tbody>' +
+    DB.fines.slice().reverse().map(function(f){
+      var b = f.status==='Pending'?'pending':'done';
+      return '<tr><td>'+f.fno+'</td><td>'+f.did+'</td><td>'+f.ct+'</td><td>'+(f.plate||'—')+'</td><td>'+f.vtype.substring(0,30)+'...</td><td>'+(f.code||'—')+'</td><td>AED '+f.amount+'</td><td>'+f.datetime+'</td><td><span class="badge '+b+'">'+f.status+'</span></td></tr>';
+    }).join('') + '</tbody></table>'
+    : '<div style="text-align:center;padding:20px;color:var(--text3)">No fines queued yet</div>';
+  document.getElementById('fine-content').innerHTML = html;
+}
+
+// ── DOWNLOAD FINES ──
+function downloadFines() {
+  var pending = DB.fines.filter(function(f){return f.status==='Pending';});
+  if (!pending.length) { alert('No pending fines to download'); return; }
+  var header = ['Fine number','Driver Id','CT num','Plate num','Fine type','Fine area','Location','Fine code','Fine amount','Penalty amount','Fine description','Fine datetime','External case number','Black points','Inspector name','Invoice number','Company fine amount','Comments'];
+  var rows = [header];
+  pending.forEach(function(f,i){
+    var dt = f.datetime || '';
+    rows.push([
+      f.fno, f.did, f.ct, f.plate||'',
+      'Internal Fines','DXB',
+      f.vtype, f.code||'', f.amount, 0,
+      f.vtype, "'"+dt,
+      '', 0, 'KPI', '', 0,
+      'FINE WILL BE DEDUCTED FROM ACCOUNT'
+    ]);
+  });
+  var csv = rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Fines_Dynamics_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+  pending.forEach(function(f){
+    f.status='Uploaded';
+    api({action:'update',sheet:'Fines',id:f.id,data:{status:'Uploaded'}},function(){});
+  });
+  renderFines();
+  alert('✅ Downloaded! '+pending.length+' fines exported in Dynamics format.');
+}
+
+// ── DRIVER SEARCH ──
+function searchDriver() {
+  var input = document.getElementById('drvInput').value.trim().toUpperCase();
+  if (!input) { alert('Enter a KB Number or Driver ID'); return; }
+  var myViol = DB.violations.filter(function(x){return x.ct===input||x.did===input;});
+  var myCalls = DB.calls.filter(function(x){return x.ct===input||x.did===input;});
+  var myFines = DB.fines.filter(function(x){return x.ct===input||x.did===input;});
+  var myTasks = DB.tasks.filter(function(x){return (x.ct===input||x.did===input)&&x.status!=='Cleared';});
+  var plate = VEHICLES[input]||'—';
+  document.getElementById('drvMeta').textContent = input+' · '+plate;
+  document.getElementById('drvViol').innerHTML = '<div class="drv-row"><span>Total</span><strong>'+myViol.length+'</strong></div>'+myViol.slice(-3).map(function(v){return '<div class="drv-row"><span style="font-size:11px">'+v.vtype.substring(0,25)+'...</span><span class="badge danger">'+v.date+'</span></div>';}).join('');
+  var answered = myCalls.filter(function(c){return c.answered==='Yes';}).length;
+  document.getElementById('drvCalls').innerHTML = '<div class="drv-row"><span>Calls made</span><strong>'+myCalls.length+'</strong></div><div class="drv-row"><span>Answered</span><strong style="color:var(--green)">'+answered+'</strong></div><div class="drv-row"><span>Not answered</span><strong style="color:var(--red)">'+(myCalls.length-answered)+'</strong></div>';
+  var total = myFines.reduce(function(s,f){return s+parseFloat(f.amount||0);},0);
+  var uploaded = myFines.filter(function(f){return f.status==='Uploaded';}).reduce(function(s,f){return s+parseFloat(f.amount||0);},0);
+  document.getElementById('drvFines').innerHTML = '<div class="drv-row"><span>Total fines</span><strong>AED '+total+'</strong></div><div class="drv-row"><span>Uploaded</span><strong style="color:var(--green)">AED '+uploaded+'</strong></div><div class="drv-row"><span>Pending</span><strong style="color:var(--red)">AED '+(total-uploaded)+'</strong></div>';
+  document.getElementById('drvActions').innerHTML = myTasks.length ? myTasks.map(function(t){return '<span class="badge danger">⚠️ '+t.vtype.substring(0,30)+'... — '+t.status+'</span>';}).join(' ') : '<span style="font-size:12px;color:var(--text3)">✅ No pending actions</span>';
+  document.getElementById('drvResult').classList.remove('hidden');
+}
+
+// ── USERS ──
+function renderUsers() {
+  api({action:'read',sheet:'Users'}, function(err,res){
+    if (err||!res) return;
+    var html = res.data.length ?
+      '<table class="tbl"><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Action</th></tr></thead><tbody>' +
+      res.data.map(function(u){
+        var canDel=u.username!=='syed'&&(currentUser.role==='Grand Master'||(currentUser.role==='Master'&&u.role==='Standard'));
+        var del = canDel?'<button class="btn sm danger" onclick="removeUser(\''+u.id+'\')">Remove</button>':'—';
+        return '<tr><td>'+u.name+'</td><td>'+u.username+'</td><td><span class="badge '+(u.role==='Grand Master'?'gm':u.role==='Master'?'master':'user')+'">'+u.role+'</span></td><td>'+del+'</td></tr>';
+      }).join('') + '</tbody></table>'
+      : '<div style="text-align:center;padding:20px;color:var(--text3)">No users</div>';
+    document.getElementById('user-content').innerHTML = html;
+  });
+}
+function addUser() {
+  var name=document.getElementById('u-name').value.trim();
+  var user=document.getElementById('u-user').value.trim().toLowerCase();
+  var pass=document.getElementById('u-pass').value;
+  var role=document.getElementById('u-role').value;
+  if(!name||!user||!pass){alert('Please fill all fields');return;}
+  // Role restriction: only Grand Master can assign Master or Grand Master role
+  if (role!=='Standard' && currentUser.role!=='Grand Master') {
+    alert('Only Grand Master can assign Master or Grand Master role');return;
+  }
+  var rec={id:Date.now(),name:name,username:user,password:pass,role:role,createdAt:new Date().toISOString()};
+  api({action:'write',sheet:'Users',data:rec},function(err){
+    if(err){alert('Error adding user');return;}
+    closeModal('userModal');
+    clearForm(['u-name','u-user','u-pass']);
+    renderUsers();
+    alert('✅ User added!');
+  });
+}
+function removeUser(id){
+  if(!confirm('Remove this user?'))return;
+  api({action:'delete',sheet:'Users',id:id},function(err){
+    if(!err)renderUsers();
+  });
+}
+
+// ── SETTINGS ──
+function renderSettings() {
+  var tbody = document.getElementById('fineamt-tbody');
+  tbody.innerHTML = FINECODES.map(function(fc){
+    var amt = fineAmounts[fc.code]||'';
+    var sevBadge = '<span class="badge '+fc.severity.toLowerCase()+'">'+fc.severity+'</span>';
+    return '<tr><td><strong>'+fc.code+'</strong></td><td style="font-size:11px">'+fc.desc+'</td><td>'+sevBadge+'</td><td><input type="number" value="'+amt+'" id="amt-'+fc.code+'" style="width:90px;padding:4px 8px;border:1px solid var(--border2);border-radius:6px;font-size:12px" placeholder="0"></td><td><button class="btn sm success" onclick="saveFineAmt(\''+fc.code+'\')">Save</button></td></tr>';
+  }).join('');
+}
+function saveFineAmt(code){
+  var amt = document.getElementById('amt-'+code).value;
+  fineAmounts[code] = parseFloat(amt)||0;
+  localStorage.setItem('fineAmounts',JSON.stringify(fineAmounts));
+  alert('✅ Amount saved for '+code);
+}
+
+// ── UTILS ──
+function clearForm(ids){ids.forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});}
+</script>
+</body>
+</html>
