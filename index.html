@@ -176,8 +176,10 @@ body{font-family:Arial,sans-serif;font-size:13px;background:var(--bg);color:var(
       <div class="nav-group">
         <div class="nav-label">Main</div>
         <div class="nav-item active" onclick="goTo('dashboard',this)">📊 Dashboard</div>
-        <div class="nav-item" onclick="goTo('pending',this)">⏳ Pending Tasks</div>
-        <div class="nav-item" onclick="goTo('driver',this)">🔍 Driver Search</div>
+        <div class="nav-item" onclick="goTo('cases',this)">🗂️ Case Center</div>
+        <div class="nav-item" onclick="goTo('pending',this)">✅ Task Center</div>
+        <div class="nav-item" onclick="goTo('bulk',this)">📥 Bulk Task Upload</div>
+        <div class="nav-item" onclick="goTo('driver',this)">👤 Driver 360</div>
       </div>
       <div class="nav-group">
         <div class="nav-label">Operations</div>
@@ -185,6 +187,7 @@ body{font-family:Arial,sans-serif;font-size:13px;background:var(--bg);color:var(
         <div class="nav-item" onclick="goTo('counselling',this)">📋 Counselling</div>
         <div class="nav-item" onclick="goTo('violations',this)">⚠️ Violation Register</div>
         <div class="nav-item" onclick="goTo('fines',this)">💰 Fine Upload</div>
+        <div class="nav-item" onclick="goTo('datahub',this)">🧩 Data Center</div>
       </div>
       <div class="nav-group">
         <div class="nav-label">Admin</div>
@@ -215,6 +218,28 @@ body{font-family:Arial,sans-serif;font-size:13px;background:var(--bg);color:var(
             <div id="dash-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
           </div>
         </div>
+
+        <!-- CASE CENTER: V2 DEMO -->
+        <div id="screen-cases" class="screen">
+          <div class="card">
+            <div class="card-head"><div><div class="card-title">🗂️ Case Center</div><div style="font-size:11px;color:var(--text2);margin-top:3px">One case links the task, calls, counselling, warning, fine and final outcome.</div></div><button class="btn primary" onclick="openModal('taskModal')">＋ New Case</button></div>
+            <div class="card-body" id="case-content"></div>
+          </div>
+        </div>
+
+        <!-- BULK TASK UPLOAD: V2 DEMO -->
+        <div id="screen-bulk" class="screen">
+          <div class="card"><div class="card-head"><div class="card-title">📥 Bulk Task Upload</div><span class="badge info">Demo workflow</span></div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px"><div class="stat navy"><div class="stat-val">1</div><div class="stat-lbl">Choose task type</div></div><div class="stat navy"><div class="stat-val">2</div><div class="stat-lbl">Validate rows</div></div><div class="stat navy"><div class="stat-val">3</div><div class="stat-lbl">Review preview</div></div><div class="stat green"><div class="stat-val">4</div><div class="stat-lbl">Create tasks</div></div></div>
+              <div class="fgrid"><div class="field"><label>Task type</label><select id="bulkType"><option>Low Trips</option><option>Low Revenue</option><option>Not Working</option><option>Violation</option></select></div><div class="field"><label>Source file</label><input type="file" accept=".xlsx,.xls,.csv"></div></div>
+              <button class="btn primary" onclick="showBulkPreview()">Validate & Preview</button><div id="bulk-preview" style="margin-top:14px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DATA CENTER: V2 DEMO -->
+        <div id="screen-datahub" class="screen"><div class="card"><div class="card-head"><div class="card-title">🧩 Data Center</div><span class="badge info">Inbound data is validated before rules create work</span></div><div class="card-body"><div class="stats"><div class="stat"><div class="stat-val">Driver</div><div class="stat-lbl">Master & vehicle data</div></div><div class="stat"><div class="stat-val">KPI</div><div class="stat-lbl">Trips, revenue, utilization</div></div><div class="stat"><div class="stat-val">Leave</div><div class="stat-lbl">Protected exception checks</div></div><div class="stat"><div class="stat-val">Rules</div><div class="stat-lbl">Validated task generation</div></div></div><p style="font-size:12px;color:var(--text2)">Production mappings will be configured from the actual Excel templates. This demo separates operational-data imports from bulk task creation to prevent accidental task generation.</p></div></div></div>
 
         <!-- PENDING TASKS -->
         <div id="screen-pending" class="screen">
@@ -4421,7 +4446,7 @@ function goTo(id, el) {
   var s = document.getElementById('screen-'+id);
   if (s) s.classList.add('active');
   if (el) el.classList.add('active');
-  var titles = {dashboard:'Dashboard',pending:'Pending Tasks',driver:'Driver Search',callrecord:'Call Record',counselling:'Counselling Record',violations:'Violation Register',fines:'Fine Upload Queue',users:'User Management',settings:'Settings'};
+  var titles = {dashboard:'Dashboard',cases:'Case Center',pending:'Task Center',bulk:'Bulk Task Upload',driver:'Driver 360',datahub:'Data Center',callrecord:'Call Record',counselling:'Counselling Record',violations:'Violation Register',fines:'Fine Upload Queue',users:'User Management',settings:'Settings'};
   document.getElementById('pageTitle').textContent = titles[id]||id;
   if (id==='pending') renderPending();
   if (id==='fines') renderFines();
@@ -4430,6 +4455,25 @@ function goTo(id, el) {
   if (id==='counselling') renderCounsel();
   if (id==='users') renderUsers();
   if (id==='settings') renderSettings();
+  if (id==='cases') renderCaseCenter();
+}
+
+function caseId(task) {
+  return task.caseId || ('CASE-' + new Date().getFullYear() + '-' + String(task.id || 0).slice(-6).padStart(6,'0'));
+}
+function renderCaseCenter() {
+  var tasks = DB.tasks || [];
+  var html = tasks.length ? '<table class="tbl"><thead><tr><th>Case ID</th><th>Driver / KB</th><th>Issue</th><th>Workflow stage</th><th>Linked records</th><th>Outcome</th></tr></thead><tbody>' + tasks.slice().reverse().map(function(t){
+    var calls=(DB.calls||[]).filter(function(x){return x.ct===t.ct||x.did===t.did;}).length;
+    var counsel=(DB.counselling||[]).filter(function(x){return x.ct===t.ct||x.did===t.did;}).length;
+    var fines=(DB.fines||[]).filter(function(x){return x.ct===t.ct||x.did===t.did;}).length;
+    var stage=t.status==='Cleared'?'Completed':t.status==='Fine Pending'?'Fine queue':t.status==='Reported'?'Counselling / action': 'Call / report required';
+    return '<tr><td><strong>'+caseId(t)+'</strong></td><td>'+t.did+' · '+t.ct+'</td><td>'+t.vtype+'</td><td><span class="badge info">'+stage+'</span></td><td>Calls: '+calls+' · Counsel: '+counsel+' · Fines: '+fines+'</td><td>'+(t.status==='Cleared'?'Closed':'Open')+'</td></tr>';
+  }).join('')+'</tbody></table>' : '<div class="loading">No cases yet. Create a task to start a case.</div>';
+  document.getElementById('case-content').innerHTML=html;
+}
+function showBulkPreview() {
+  document.getElementById('bulk-preview').innerHTML='<div class="card" style="margin:0"><div class="card-body"><strong>Validation preview (demo)</strong><div style="margin-top:8px;font-size:12px;color:var(--text2)">428 valid rows · 8 duplicates · 6 drivers not found · 5 missing fields · 3 invalid dates</div><div style="margin-top:10px"><button class="btn success" onclick="alert(\'Demo only: production creation will be enabled after the Excel template rules are mapped.\')">Create 428 Tasks</button></div></div></div>';
 }
 
 // ── MODALS ──
@@ -4853,3 +4897,4 @@ function clearForm(ids){ids.forEach(function(id){var el=document.getElementById(
 </script>
 </body>
 </html>
+
