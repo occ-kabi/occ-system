@@ -186,13 +186,21 @@ body{font-family:Arial,sans-serif;font-size:13px;background:var(--bg);color:var(
         <div class="nav-item" onclick="goTo('callrecord',this)">📞 Call Record</div>
         <div class="nav-item" onclick="goTo('counselling',this)">📋 Counselling</div>
         <div class="nav-item" onclick="goTo('violations',this)">⚠️ Violation Register</div>
+        <div class="nav-item" onclick="goTo('warnings',this)">✉️ Warning Letters</div>
         <div class="nav-item" onclick="goTo('fines',this)">💰 Fine Upload</div>
+        <div class="nav-item" onclick="goTo('suspension',this)">⏸️ Suspension & Recovery</div>
         <div class="nav-item" onclick="goTo('datahub',this)">🧩 Data Center</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Insights</div>
+        <div class="nav-item" onclick="goTo('performance',this)">📈 Performance & KPI</div>
+        <div class="nav-item" onclick="goTo('reports',this)">📄 Reports</div>
       </div>
       <div class="nav-group">
         <div class="nav-label">Admin</div>
         <div class="nav-item monly" onclick="goTo('users',this)">👥 User Management</div>
         <div class="nav-item monly" onclick="goTo('settings',this)">⚙️ Settings</div>
+        <div class="nav-item monly" onclick="goTo('audit',this)">🧾 Audit Log</div>
       </div>
     </div>
     <div class="main">
@@ -213,7 +221,7 @@ body{font-family:Arial,sans-serif;font-size:13px;background:var(--bg);color:var(
           <div class="card">
             <div class="card-head">
               <div class="card-title">⏳ Pending Tasks</div>
-              <button class="btn sm primary" onclick="goTo('pending',document.querySelectorAll('.nav-item')[1])">View All</button>
+              <button class="btn sm primary" onclick="goTo('pending',null)">View All</button>
             </div>
             <div id="dash-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
           </div>
@@ -240,6 +248,21 @@ body{font-family:Arial,sans-serif;font-size:13px;background:var(--bg);color:var(
 
         <!-- DATA CENTER: V2 DEMO -->
         <div id="screen-datahub" class="screen"><div class="card"><div class="card-head"><div class="card-title">🧩 Data Center</div><span class="badge info">Inbound data is validated before rules create work</span></div><div class="card-body"><div class="stats"><div class="stat"><div class="stat-val">Driver</div><div class="stat-lbl">Master & vehicle data</div></div><div class="stat"><div class="stat-val">KPI</div><div class="stat-lbl">Trips, revenue, utilization</div></div><div class="stat"><div class="stat-val">Leave</div><div class="stat-lbl">Protected exception checks</div></div><div class="stat"><div class="stat-val">Rules</div><div class="stat-lbl">Validated task generation</div></div></div><p style="font-size:12px;color:var(--text2)">Production mappings will be configured from the actual Excel templates. This demo separates operational-data imports from bulk task creation to prevent accidental task generation.</p></div></div></div>
+
+        <!-- WARNING LETTERS: V2 UI -->
+        <div id="screen-warnings" class="screen"><div class="card"><div class="card-head"><div><div class="card-title">✉️ Warning Letters</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Generated from a case after counselling confirms that a warning is required.</div></div><button class="btn primary" onclick="showDemoNotice('Warning-letter templates will be connected once the approved company format is supplied.')">Generate Letter</button></div><div class="card-body"><div class="fgrid three"><div class="field"><label>Case ID</label><input placeholder="CASE-2026-000452"></div><div class="field"><label>Warning template</label><select><option>Standard operational warning</option><option>Performance warning</option><option>Final warning</option></select></div><div class="field"><label>Signature status</label><select><option>Pending print & signature</option><option>Signed</option><option>Refused - reason required</option></select></div></div><div class="card" style="margin:0"><div class="card-body" style="font-size:12px;color:var(--text2)">Letter preview will automatically include driver details, vehicle, violation, date, prior cases and the selected resolution.</div></div></div></div></div>
+
+        <!-- SUSPENSION & RECOVERY: V2 UI -->
+        <div id="screen-suspension" class="screen"><div class="card"><div class="card-head"><div class="card-title">⏸️ Suspension & Recovery</div><button class="btn primary" onclick="showDemoNotice('Suspension actions will be saved against the linked case when backend fields are available.')">New Suspension</button></div><div class="card-body"><div class="stats"><div class="stat red"><div class="stat-val">0</div><div class="stat-lbl">Active suspensions</div></div><div class="stat orange"><div class="stat-val">0</div><div class="stat-lbl">Awaiting report</div></div><div class="stat navy"><div class="stat-val">0</div><div class="stat-lbl">Verification required</div></div><div class="stat green"><div class="stat-val">0</div><div class="stat-lbl">Recovered today</div></div></div><div style="font-size:12px;color:var(--text2)">Lifecycle: suspension → driver reported → verification → recovery/lift → case outcome.</div></div></div></div>
+
+        <!-- PERFORMANCE & KPI: V2 UI -->
+        <div id="screen-performance" class="screen"><div class="card"><div class="card-head"><div class="card-title">📈 Performance & KPI</div><button class="btn primary" onclick="goTo('datahub',null)">Upload Performance Data</button></div><div class="card-body"><div class="stats"><div class="stat"><div class="stat-val">Trips</div><div class="stat-lbl">Below-threshold drivers</div></div><div class="stat"><div class="stat-val">Revenue</div><div class="stat-lbl">Low-revenue exceptions</div></div><div class="stat"><div class="stat-val">Login</div><div class="stat-lbl">Late-login exceptions</div></div><div class="stat"><div class="stat-val">Leave</div><div class="stat-lbl">Protected exclusions</div></div></div><div class="card" style="margin:0"><div class="card-body" style="font-size:12px;color:var(--text2)">When source data is mapped, the rule engine will validate leave and history before generating eligible cases.</div></div></div></div></div>
+
+        <!-- REPORTS: V2 UI -->
+        <div id="screen-reports" class="screen"><div class="card"><div class="card-head"><div class="card-title">📄 Reports & Analytics</div><button class="btn" onclick="showDemoNotice('Report exports will use the final agreed data fields and Excel templates.')">Export Report</button></div><div class="card-body"><div class="fgrid three"><div class="field"><label>Report</label><select><option>Operational case summary</option><option>Fine queue report</option><option>Driver history report</option><option>User workload report</option></select></div><div class="field"><label>Date from</label><input type="date"></div><div class="field"><label>Date to</label><input type="date"></div></div><div style="font-size:12px;color:var(--text2)">Reports will cover workload, workflow outcomes, fines, warnings, suspensions and operational trends.</div></div></div></div>
+
+        <!-- AUDIT LOG: V2 UI -->
+        <div id="screen-audit" class="screen"><div class="card"><div class="card-head"><div class="card-title">🧾 Audit Log</div><span class="badge info">Admin-only</span></div><div class="card-body"><table class="tbl"><thead><tr><th>When</th><th>User</th><th>Action</th><th>Record</th><th>Reason</th></tr></thead><tbody><tr><td>—</td><td>—</td><td>Audit events will appear here</td><td>—</td><td>Captured with each controlled change</td></tr></tbody></table></div></div></div>
 
         <!-- PENDING TASKS -->
         <div id="screen-pending" class="screen">
@@ -4428,7 +4451,7 @@ function doLogin() {
     var badge = document.getElementById('topBadge');
     badge.textContent = found.role.toUpperCase();
     badge.className = 'tb-badge' + (found.role==='Grand Master'?' gm':found.role==='Master'?'':' user');
-    if (found.role==='Master') {
+    if (found.role==='Master' || found.role==='Grand Master') {
       document.querySelectorAll('.monly').forEach(function(el){el.classList.add('show');});
     }
     populateVtypeSelects();
@@ -4446,7 +4469,7 @@ function goTo(id, el) {
   var s = document.getElementById('screen-'+id);
   if (s) s.classList.add('active');
   if (el) el.classList.add('active');
-  var titles = {dashboard:'Dashboard',cases:'Case Center',pending:'Task Center',bulk:'Bulk Task Upload',driver:'Driver 360',datahub:'Data Center',callrecord:'Call Record',counselling:'Counselling Record',violations:'Violation Register',fines:'Fine Upload Queue',users:'User Management',settings:'Settings'};
+  var titles = {dashboard:'Dashboard',cases:'Case Center',pending:'Task Center',bulk:'Bulk Task Upload',driver:'Driver 360',datahub:'Data Center',warnings:'Warning Letters',suspension:'Suspension & Recovery',performance:'Performance & KPI',reports:'Reports & Analytics',audit:'Audit Log',callrecord:'Call Record',counselling:'Counselling Record',violations:'Violation Register',fines:'Fine Upload Queue',users:'User Management',settings:'Settings'};
   document.getElementById('pageTitle').textContent = titles[id]||id;
   if (id==='pending') renderPending();
   if (id==='fines') renderFines();
@@ -4457,6 +4480,8 @@ function goTo(id, el) {
   if (id==='settings') renderSettings();
   if (id==='cases') renderCaseCenter();
 }
+
+function showDemoNotice(message) { alert('UI preview: ' + message); }
 
 function caseId(task) {
   return task.caseId || ('CASE-' + new Date().getFullYear() + '-' + String(task.id || 0).slice(-6).padStart(6,'0'));
