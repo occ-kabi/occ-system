@@ -249,8 +249,34 @@ body{font-family:Arial,sans-serif;font-size:13px;background:var(--bg);color:var(
         <!-- DATA CENTER: V2 DEMO -->
         <div id="screen-datahub" class="screen"><div class="card"><div class="card-head"><div class="card-title">🧩 Data Center</div><span class="badge info">Inbound data is validated before rules create work</span></div><div class="card-body"><div class="stats"><div class="stat"><div class="stat-val">Driver</div><div class="stat-lbl">Master & vehicle data</div></div><div class="stat"><div class="stat-val">KPI</div><div class="stat-lbl">Trips, revenue, utilization</div></div><div class="stat"><div class="stat-val">Leave</div><div class="stat-lbl">Protected exception checks</div></div><div class="stat"><div class="stat-val">Rules</div><div class="stat-lbl">Validated task generation</div></div></div><p style="font-size:12px;color:var(--text2)">Production mappings will be configured from the actual Excel templates. This demo separates operational-data imports from bulk task creation to prevent accidental task generation.</p></div></div></div>
 
-        <!-- WARNING LETTERS: V2 UI -->
-        <div id="screen-warnings" class="screen"><div class="card"><div class="card-head"><div><div class="card-title">✉️ Warning Letters</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Generated from a case after counselling confirms that a warning is required.</div></div><button class="btn primary" onclick="showDemoNotice('Warning-letter templates will be connected once the approved company format is supplied.')">Generate Letter</button></div><div class="card-body"><div class="fgrid three"><div class="field"><label>Case ID</label><input placeholder="CASE-2026-000452"></div><div class="field"><label>Warning template</label><select><option>Standard operational warning</option><option>Performance warning</option><option>Final warning</option></select></div><div class="field"><label>Signature status</label><select><option>Pending print & signature</option><option>Signed</option><option>Refused - reason required</option></select></div></div><div class="card" style="margin:0"><div class="card-body" style="font-size:12px;color:var(--text2)">Letter preview will automatically include driver details, vehicle, violation, date, prior cases and the selected resolution.</div></div></div></div></div>
+        <!-- WARNING LETTERS: SETTINGS-DRIVEN GENERATOR -->
+        <div id="screen-warnings" class="screen">
+          <div class="card">
+            <div class="card-head"><div><div class="card-title">✉️ Warning Letter Generator</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Select an active category from Settings. Fine amount and code are filled from the current category configuration.</div></div><span class="badge info" id="wl-active-count">0 active categories</span></div>
+            <div class="card-body">
+              <div class="fgrid three">
+                <div class="field"><label>Case ID *</label><input id="gen-case-id" placeholder="CASE-2026-000452"></div>
+                <div class="field"><label>Warning category *</label><select id="gen-category" onchange="loadWarningCategory()"></select></div>
+                <div class="field"><label>Letter date *</label><input id="gen-date" type="date"></div>
+                <div class="field"><label>Driver name *</label><input id="gen-driver-name" placeholder="Driver full name"></div>
+                <div class="field"><label>Driver ID / DID *</label><input id="gen-driver-id" placeholder="Driver ID"></div>
+                <div class="field"><label>Meter / CT number</label><input id="gen-meter" placeholder="Vehicle / CT number"></div>
+                <div class="field"><label>Shift</label><select id="gen-shift"><option value="">Select shift</option><option>12D</option><option>12N</option><option>24HRS</option></select></div>
+                <div class="field"><label>Fine amount (AED)</label><input id="gen-fine-amount" type="number" min="0" step="0.01" readonly></div>
+                <div class="field"><label>Fine code</label><input id="gen-fine-code" readonly></div>
+                <div class="field"><label>Outstanding amount (AED)</label><input id="gen-outstanding" type="number" min="0" step="0.01" placeholder="0.00"></div>
+                <div class="field"><label>Issued by *</label><input id="gen-issued-by" placeholder="OCC officer name"></div>
+                <div class="field"><label>Signature status</label><select id="gen-signature"><option>Pending print & signature</option><option>Signed</option><option>Refused - reason required</option></select></div>
+              </div>
+              <div class="field" style="margin-top:12px"><label>Incident / performance details *</label><textarea id="gen-details" rows="4" placeholder="Enter verified incident details, dates, trips, acceptance or other supporting facts."></textarea></div>
+              <div class="field" style="margin-top:10px"><label>Additional instructions / resolution</label><textarea id="gen-resolution" rows="3" placeholder="Enter required corrective action or management instruction."></textarea></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0"><button class="btn primary" onclick="previewWarningLetter()">Preview Letter</button><button class="btn success" onclick="saveWarningLetterDraft()">Save Draft</button><button class="btn" onclick="printWarningLetter()">Print</button></div>
+              <div id="warning-letter-preview" class="card" style="margin:0;display:none"><div class="card-head"><div class="card-title">Letter Preview</div><span class="badge info">Draft preview</span></div><div class="card-body" id="warning-letter-preview-body"></div></div>
+              <div style="font-size:11px;color:var(--text2);margin-top:10px">Drafts are currently stored in this browser only. Do not treat a saved draft as centrally issued or acknowledged. The approved company letter wording and signature layout must be brought across from the standalone generator before production use.</div>
+            </div>
+          </div>
+          <div class="card"><div class="card-head"><div class="card-title">Recent local warning-letter drafts</div><button class="btn sm" onclick="renderWarningDrafts()">Refresh</button></div><div class="card-body" style="overflow-x:auto"><table class="tbl"><thead><tr><th>Saved</th><th>Case ID</th><th>Driver ID</th><th>Category</th><th>Fine (AED)</th><th>Status</th></tr></thead><tbody id="warning-drafts-tbody"></tbody></table></div></div>
+        </div>
 
         <!-- SUSPENSION & RECOVERY: V2 UI -->
         <div id="screen-suspension" class="screen"><div class="card"><div class="card-head"><div class="card-title">⏸️ Suspension & Recovery</div><button class="btn primary" onclick="showDemoNotice('Suspension actions will be saved against the linked case when backend fields are available.')">New Suspension</button></div><div class="card-body"><div class="stats"><div class="stat red"><div class="stat-val">0</div><div class="stat-lbl">Active suspensions</div></div><div class="stat orange"><div class="stat-val">0</div><div class="stat-lbl">Awaiting report</div></div><div class="stat navy"><div class="stat-val">0</div><div class="stat-lbl">Verification required</div></div><div class="stat green"><div class="stat-val">0</div><div class="stat-lbl">Recovered today</div></div></div><div style="font-size:12px;color:var(--text2)">Lifecycle: suspension → driver reported → verification → recovery/lift → case outcome.</div></div></div></div>
@@ -4512,6 +4538,7 @@ function goTo(id, el) {
   if (id==='counselling') renderCounsel();
   if (id==='users') renderUsers();
   if (id==='settings') renderSettings();
+  if (id==='warnings') initWarningLetterGenerator();
   if (id==='cases') renderCaseCenter();
 }
 
@@ -4971,6 +4998,62 @@ function saveFineCodeMaster(i){
  f.code=code;f.description=desc;f.amount=Number(amt);f.categoryId=document.getElementById('fm-cat-'+i).value;f.effectiveDate=date;f.status=document.getElementById('fm-status-'+i).value;persistFineCodeMaster();renderFineCodeMaster();alert('Fine code saved.');
 }
 function saveFineAmt(code){var amt=document.getElementById('amt-'+code).value;if(amt===''||!Number.isFinite(Number(amt))||Number(amt)<0){alert('Enter a valid non-negative amount.');return;}fineAmounts[code]=Number(amt);localStorage.setItem('fineAmounts',JSON.stringify(fineAmounts));alert('Amount saved for '+code);}
+
+// ── SETTINGS-DRIVEN WARNING LETTER DRAFT GENERATOR ──
+function activeWarningCategories(){return warningLetterCategories.filter(function(x){return x.status==='Active';});}
+function initWarningLetterGenerator(){
+ var sel=document.getElementById('gen-category');if(!sel)return;
+ var cats=activeWarningCategories();
+ document.getElementById('wl-active-count').textContent=cats.length+' active categories';
+ sel.innerHTML='<option value="">Select warning category</option>'+cats.map(function(x){return '<option value="'+settingsEscape(x.id)+'">'+settingsEscape(x.category)+'</option>';}).join('');
+ var d=document.getElementById('gen-date');if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);
+ loadWarningCategory();renderWarningDrafts();
+}
+function loadWarningCategory(){
+ var id=document.getElementById('gen-category').value;
+ var c=warningLetterCategories.find(function(x){return x.id===id&&x.status==='Active';});
+ document.getElementById('gen-fine-amount').value=c?Number(c.fineAmount||0):'';
+ document.getElementById('gen-fine-code').value=c?(c.fineCode||''):'';
+}
+function warningLetterData(){
+ var id=document.getElementById('gen-category').value;
+ var cat=warningLetterCategories.find(function(x){return x.id===id&&x.status==='Active';});
+ return {caseId:document.getElementById('gen-case-id').value.trim(),category:cat,letterDate:document.getElementById('gen-date').value,driverName:document.getElementById('gen-driver-name').value.trim(),driverId:document.getElementById('gen-driver-id').value.trim(),meter:document.getElementById('gen-meter').value.trim(),shift:document.getElementById('gen-shift').value,fineAmount:Number(document.getElementById('gen-fine-amount').value||0),fineCode:document.getElementById('gen-fine-code').value.trim(),outstanding:document.getElementById('gen-outstanding').value,issuedBy:document.getElementById('gen-issued-by').value.trim(),signatureStatus:document.getElementById('gen-signature').value,details:document.getElementById('gen-details').value.trim(),resolution:document.getElementById('gen-resolution').value.trim()};
+}
+function validateWarningLetterData(x){
+ if(!x.caseId||!x.category||!x.letterDate||!x.driverName||!x.driverId||!x.issuedBy||!x.details){alert('Complete all required fields: Case ID, category, date, driver name, driver ID, issued by and incident details.');return false;}
+ if(x.category.approvalRequired==='Yes'){alert('This category requires approval. Approval workflow is not connected yet; do not issue this letter from the prototype.');return false;}
+ if(x.outstanding!==''&&(!Number.isFinite(Number(x.outstanding))||Number(x.outstanding)<0)){alert('Enter a valid non-negative outstanding amount.');return false;}
+ if(x.signatureStatus.indexOf('Refused')===0&&!x.resolution){alert('Enter the reason / resolution when the driver refuses to sign.');return false;}
+ return true;
+}
+function warningLetterPreviewHtml(x){
+ var esc=settingsEscape;
+ return '<div style="max-width:780px;margin:auto;padding:24px;color:#111;font-family:Arial,sans-serif;line-height:1.55"><div style="text-align:center;border-bottom:2px solid #1a3a5c;padding-bottom:12px;margin-bottom:18px"><h2 style="color:#1a3a5c">KABI TAXI LLC</h2><strong>'+esc(x.category.title)+'</strong></div><p><strong>Date:</strong> '+esc(x.letterDate)+'</p><p><strong>Case ID:</strong> '+esc(x.caseId)+'</p><p><strong>To:</strong> '+esc(x.driverName)+' &nbsp; <strong>Driver ID:</strong> '+esc(x.driverId)+'</p><p><strong>Meter / CT:</strong> '+esc(x.meter||'—')+' &nbsp; <strong>Shift:</strong> '+esc(x.shift||'—')+'</p><p>Dear '+esc(x.driverName)+',</p><p>This letter serves as a '+esc(x.category.warningType||'written warning')+' regarding the following reported matter:</p><div style="white-space:pre-wrap;border:1px solid #ddd;padding:12px;margin:12px 0">'+esc(x.details)+'</div><p><strong>Fine amount:</strong> AED '+esc(x.fineAmount.toFixed(2))+' &nbsp; <strong>Fine code:</strong> '+esc(x.fineCode||'To be assigned')+'</p><p><strong>Outstanding amount:</strong> '+(x.outstanding===''?'Not specified':'AED '+esc(Number(x.outstanding).toFixed(2)))+'</p><p><strong>Required corrective action:</strong></p><div style="white-space:pre-wrap">'+esc(x.resolution||'Comply with company operational requirements and avoid recurrence.')+'</div><p style="margin-top:28px">Issued by: '+esc(x.issuedBy)+'</p><div style="display:flex;justify-content:space-between;margin-top:36px"><div>Driver signature: ____________________<br/>Name: '+esc(x.driverName)+'</div><div>Date: ____________________<br/>Acknowledgment: '+esc(x.signatureStatus)+'</div></div><p style="font-size:10px;color:#666;margin-top:24px">Prototype draft. This is not the approved company template until the supplied generator wording and layout are integrated.</p></div>';
+}
+function previewWarningLetter(){
+ var x=warningLetterData();if(!validateWarningLetterData(x))return;
+ document.getElementById('warning-letter-preview-body').innerHTML=warningLetterPreviewHtml(x);
+ document.getElementById('warning-letter-preview').style.display='block';
+}
+function saveWarningLetterDraft(){
+ var x=warningLetterData();if(!validateWarningLetterData(x))return;
+ var drafts=JSON.parse(localStorage.getItem('occWarningLetterDrafts')||'[]');
+ x.savedAt=new Date().toISOString();x.status='Local Draft';x.categoryId=x.category.id;x.category=x.category.category;
+ drafts.unshift(x);localStorage.setItem('occWarningLetterDrafts',JSON.stringify(drafts));
+ renderWarningDrafts();alert('Draft saved in this browser only. It has not been centrally issued or recorded.');
+}
+function renderWarningDrafts(){
+ var body=document.getElementById('warning-drafts-tbody');if(!body)return;
+ var drafts=JSON.parse(localStorage.getItem('occWarningLetterDrafts')||'[]');
+ body.innerHTML=drafts.slice(0,50).map(function(x){return '<tr><td>'+settingsEscape(new Date(x.savedAt).toLocaleString())+'</td><td>'+settingsEscape(x.caseId)+'</td><td>'+settingsEscape(x.driverId)+'</td><td>'+settingsEscape(x.category)+'</td><td>'+settingsEscape(Number(x.fineAmount||0).toFixed(2))+'</td><td>'+settingsEscape(x.status)+'</td></tr>';}).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text3)">No local drafts saved.</td></tr>';
+}
+function printWarningLetter(){
+ var x=warningLetterData();if(!validateWarningLetterData(x))return;
+ var w=window.open('','_blank');if(!w){alert('Allow pop-ups to print the letter.');return;}
+ w.document.write('<!doctype html><html><head><title>Warning Letter - '+settingsEscape(x.caseId)+'</title><style>body{font-family:Arial;margin:20px}@page{size:A4;margin:18mm}</style></head><body>'+warningLetterPreviewHtml(x)+'</body></html>');
+ w.document.close();w.focus();w.print();
+}
 
 // ── UTILS ──
 function clearForm(ids){ids.forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});}
