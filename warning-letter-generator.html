@@ -331,6 +331,10 @@ function applyOccTemplateSettings(v){
 window.addEventListener('message',function(e){
   if(!e.data||e.data.type!=='OCC_WARNING_SETTINGS')return;
   occWarningSettings=Array.isArray(e.data.categories)?e.data.categories:[];
+  Object.keys(occTemplateCategoryIds).forEach(function(v){
+    var cfg=occGetConfig(v),opt=document.querySelector('#vt option[value="'+v+'"]');
+    if(opt&&cfg){opt.textContent=cfg.category;opt.disabled=cfg.status==='Inactive';}
+  });
   applyOccTemplateSettings(document.getElementById('vt').value);
 });
 function fmtDate(d) {
@@ -396,6 +400,7 @@ function getData() {
     v15: 'Warning for Low Trips and Vehicle Idling Violation',
     v16: 'Black Trip using Careem Booking – Written Warning Letter'
   };
+  if(occCurrentWarningConfig&&occCurrentWarningConfig.title) titles[v]=occCurrentWarningConfig.title;
   var rows = [], body = [];
   if (v === 'v1') {
     var f = document.getElementById('v1f').value;
