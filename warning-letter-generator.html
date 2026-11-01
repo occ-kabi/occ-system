@@ -601,7 +601,7 @@ function getData() {
     body[body.length - 1] += ' Your total outstanding amount is <b>' + ocS + '</b>.';
   }
   var ackTxt = (v === 'v15') ? ('I, ' + name + ', acknowledge receipt of this written warning and confirm that I have read, understood, and accepted the contents of this letter, including the required actions and consequences of any further violation.') : '';
-  return { name: name, did: did, shift: shift, ld: ld, sig: sig, title: titles[v], rows: rows, body: body, v: v, ack: ackTxt };
+  return { name: name, did: did, shift: shift, ld: ld, sig: sig, title: titles[v], rows: rows, body: body, v: v, ack: ackTxt, caseId: caseId };
 }
 function genLetter() {
   var v = document.getElementById('vt').value;
@@ -636,7 +636,7 @@ function genLetter() {
   }
   var preview =
     'Date     : ' + d.ld + '\n' +
-    'Case ID  : ' + caseId + '\n' +
+    'Case ID  : ' + d.caseId + '\n' +
     'Name     : ' + d.name + '\n' +
     'DID      : ' + d.did + '\n' +
     'Taxi Driver, Kabi LLC\n\n' +
@@ -662,7 +662,7 @@ function genLetter() {
   var logoSrc = document.getElementById('KL').src;
   document.getElementById('PCO').innerHTML =
     '<div class="LH">' +
-      '<div class="LHL"><div class="DN">' + d.name + '</div><div>DID : ' + d.did + '</div><div>Case ID : ' + caseId + '</div><div>Taxi Driver, Kabi LLC</div></div>' +
+      '<div class="LHL"><div class="DN">' + d.name + '</div><div>DID : ' + d.did + '</div><div>Case ID : ' + d.caseId + '</div><div>Taxi Driver, Kabi LLC</div></div>' +
       '<div class="LHR"><img src="' + logoSrc + '" alt="Kabi Logo"><div class="DT">Date : ' + d.ld + '</div></div>' +
     '</div>' +
     '<div class="HDG">' + d.title + '</div>' +
