@@ -582,6 +582,11 @@ function getData() {
       rows=rows.map(function(r){if(r[0]==='Fine Amount')r[1]='AED '+occMoney(configured)+'/-';return r;});
       body=body.map(function(p){return p.replace(/AED 200/g,'AED '+occMoney(configured));});
     }
+    // Categories without a fine field in the source form still display the amount configured in OCC Settings.
+    if(!rows.some(function(r){return /fine amount|total fine/i.test(r[0]);})){
+      rows.push(['Fine Amount', 'AED '+occMoney(configured)+'/-']);
+      body[body.length-1] += ' The applicable fine amount configured for this category is <b>AED '+occMoney(configured)+'</b>.';
+    }
   }
   if (occCurrentWarningConfig && occCurrentWarningConfig.fineCode) rows.push(['Fine Code', occCurrentWarningConfig.fineCode]);
   if (v !== 'v13') {
