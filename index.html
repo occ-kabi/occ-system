@@ -249,99 +249,16 @@ body{font-family:Arial,sans-serif;font-size:13px;background:var(--bg);color:var(
         <!-- DATA CENTER: V2 DEMO -->
         <div id="screen-datahub" class="screen"><div class="card"><div class="card-head"><div class="card-title">🧩 Data Center</div><span class="badge info">Inbound data is validated before rules create work</span></div><div class="card-body"><div class="stats"><div class="stat"><div class="stat-val">Driver</div><div class="stat-lbl">Master & vehicle data</div></div><div class="stat"><div class="stat-val">KPI</div><div class="stat-lbl">Trips, revenue, utilization</div></div><div class="stat"><div class="stat-val">Leave</div><div class="stat-lbl">Protected exception checks</div></div><div class="stat"><div class="stat-val">Rules</div><div class="stat-lbl">Validated task generation</div></div></div><p style="font-size:12px;color:var(--text2)">Production mappings will be configured from the actual Excel templates. This demo separates operational-data imports from bulk task creation to prevent accidental task generation.</p></div></div></div>
 
-        <!-- WARNING LETTERS: V2 UI -->
-        <div id="screen-warnings" class="screen"><div class="card"><div class="card-head"><div><div class="card-title">✉️ Warning Letters</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Generated from a case after counselling confirms that a warning is required.</div></div><button class="btn primary" onclick="showDemoNotice('Warning-letter templates will be connected once the approved company format is supplied.')">Generate Letter</button></div><div class="card-body"><div class="fgrid three"><div class="field"><label>Case ID</label><input placeholder="CASE-2026-000452"></div><div class="field"><label>Warning template</label><select><option>Standard operational warning</option><option>Performance warning</option><option>Final warning</option></select></div><div class="field"><label>Signature status</label><select><option>Pending print & signature</option><option>Signed</option><option>Refused - reason required</option></select></div></div><div class="card" style="margin:0"><div class="card-body" style="font-size:12px;color:var(--text2)">Letter preview will automatically include driver details, vehicle, violation, date, prior cases and the selected resolution.</div></div></div></div></div>
-
-        <!-- SUSPENSION & RECOVERY: V2 UI -->
-        <div id="screen-suspension" class="screen"><div class="card"><div class="card-head"><div class="card-title">⏸️ Suspension & Recovery</div><button class="btn primary" onclick="showDemoNotice('Suspension actions will be saved against the linked case when backend fields are available.')">New Suspension</button></div><div class="card-body"><div class="stats"><div class="stat red"><div class="stat-val">0</div><div class="stat-lbl">Active suspensions</div></div><div class="stat orange"><div class="stat-val">0</div><div class="stat-lbl">Awaiting report</div></div><div class="stat navy"><div class="stat-val">0</div><div class="stat-lbl">Verification required</div></div><div class="stat green"><div class="stat-val">0</div><div class="stat-lbl">Recovered today</div></div></div><div style="font-size:12px;color:var(--text2)">Lifecycle: suspension → driver reported → verification → recovery/lift → case outcome.</div></div></div></div>
-
-        <!-- PERFORMANCE & KPI: V2 UI -->
-        <div id="screen-performance" class="screen"><div class="card"><div class="card-head"><div class="card-title">📈 Performance & KPI</div><button class="btn primary" onclick="goTo('datahub',null)">Upload Performance Data</button></div><div class="card-body"><div class="stats"><div class="stat"><div class="stat-val">Trips</div><div class="stat-lbl">Below-threshold drivers</div></div><div class="stat"><div class="stat-val">Revenue</div><div class="stat-lbl">Low-revenue exceptions</div></div><div class="stat"><div class="stat-val">Login</div><div class="stat-lbl">Late-login exceptions</div></div><div class="stat"><div class="stat-val">Leave</div><div class="stat-lbl">Protected exclusions</div></div></div><div class="card" style="margin:0"><div class="card-body" style="font-size:12px;color:var(--text2)">When source data is mapped, the rule engine will validate leave and history before generating eligible cases.</div></div></div></div></div>
-
-        <!-- REPORTS: V2 UI -->
-        <div id="screen-reports" class="screen"><div class="card"><div class="card-head"><div class="card-title">📄 Reports & Analytics</div><button class="btn" onclick="showDemoNotice('Report exports will use the final agreed data fields and Excel templates.')">Export Report</button></div><div class="card-body"><div class="fgrid three"><div class="field"><label>Report</label><select><option>Operational case summary</option><option>Fine queue report</option><option>Driver history report</option><option>User workload report</option></select></div><div class="field"><label>Date from</label><input type="date"></div><div class="field"><label>Date to</label><input type="date"></div></div><div style="font-size:12px;color:var(--text2)">Reports will cover workload, workflow outcomes, fines, warnings, suspensions and operational trends.</div></div></div></div>
-
-        <!-- AUDIT LOG: V2 UI -->
-        <div id="screen-audit" class="screen"><div class="card"><div class="card-head"><div class="card-title">🧾 Audit Log</div><span class="badge info">Admin-only</span></div><div class="card-body"><table class="tbl"><thead><tr><th>When</th><th>User</th><th>Action</th><th>Record</th><th>Reason</th></tr></thead><tbody><tr><td>—</td><td>—</td><td>Audit events will appear here</td><td>—</td><td>Captured with each controlled change</td></tr></tbody></table></div></div></div>
-
-        <!-- PENDING TASKS -->
-        <div id="screen-pending" class="screen">
-          <div class="card">
-            <div class="sbar">
-              <input type="text" id="pendSearch" placeholder="Search by Driver ID or CT Num..." oninput="renderPending()">
-              <button class="btn primary" onclick="openModal('taskModal')">➕ New Task</button>
-            </div>
-            <div class="tabs">
-              <div class="tab active" onclick="setTab('all',this)">All</div>
-              <div class="tab" onclick="setTab('Suspended',this)">Suspended</div>
-              <div class="tab" onclick="setTab('Reported',this)">Reported</div>
-              <div class="tab" onclick="setTab('Fine Pending',this)">Fine Pending</div>
-              <div class="tab" onclick="setTab('Cleared',this)">Cleared</div>
-            </div>
-            <div id="pending-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
-          </div>
-        </div>
-
-        <!-- DRIVER SEARCH -->
-        <div id="screen-driver" class="screen">
-          <div class="card">
-            <div class="sbar">
-              <input type="text" id="drvInput" placeholder="Enter KB Number (e.g. KB1172) or Driver ID...">
-              <button class="btn primary" onclick="searchDriver()">🔍 Search</button>
-            </div>
-          </div>
-          <div id="drvResult" class="hidden">
-            <div class="card">
-              <div class="card-head">
-                <div class="card-title">👤 Driver Profile</div>
-                <span class="badge info" id="drvMeta"></span>
-              </div>
-              <div class="drv-grid">
-                <div class="drv-col"><div class="drv-col-title">Violations</div><div id="drvViol"></div></div>
-                <div class="drv-col"><div class="drv-col-title">Call Record</div><div id="drvCalls"></div></div>
-                <div class="drv-col"><div class="drv-col-title">Fines</div><div id="drvFines"></div></div>
-              </div>
-              <div style="padding:10px 14px;border-top:1px solid var(--border)">
-                <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">Pending Actions</div>
-                <div id="drvActions" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- CALL RECORD -->
-        <div id="screen-callrecord" class="screen">
+        <!-- WARNING LETTERS: ORIGINAL TEMPLATE GENERATOR -->
+        <div id="screen-warnings" class="screen">
           <div class="card">
             <div class="card-head">
-              <div class="card-title">📞 Call Record</div>
-              <button class="btn primary" onclick="openModal('callModal')">➕ Log Call</button>
+              <div><div class="card-title">✉️ Original Warning Letter Generator</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Original 15 templates and A4 print layout. Active category settings provide the fine amount and fine code.</div></div>
+              <span class="badge info" id="wl-active-count">15 templates</span>
             </div>
-            <div id="call-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
-          </div>
-        </div>
-
-        <!-- COUNSELLING -->
-        <div id="screen-counselling" class="screen">
-          <div class="card">
-            <div class="card-head">
-              <div class="card-title">📋 Counselling Record</div>
-              <button class="btn primary" onclick="openModal('counselModal')">➕ Add Record</button>
+            <div class="card-body" style="padding:0">
+              <iframe id="warning-letter-frame" title="Kabi original warning letter generator" src="warning-letter-generator.html" style="display:block;width:100%;height:calc(100vh - 165px);min-height:950px;border:0;background:#f4f6f9"></iframe>
             </div>
-            <div id="counsel-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
-          </div>
-        </div>
-
-        <!-- VIOLATIONS -->
-        <div id="screen-violations" class="screen">
-          <div class="card">
-            <div class="card-head">
-              <div class="card-title">⚠️ Violation Register</div>
-              <button class="btn sm" onclick="exportViolations()">⬇️ Export</button>
-            </div>
-            <div class="sbar">
-              <input type="text" id="violSearch" placeholder="Search by Driver ID, violation..." oninput="renderViolations()">
-            </div>
-            <div id="viol-content"><div class="loading"><span class="spinner"></span>Loading...</div></div>
           </div>
         </div>
 
@@ -375,16 +292,25 @@ body{font-family:Arial,sans-serif;font-size:13px;background:var(--bg);color:var(
 
         <!-- SETTINGS -->
         <div id="screen-settings" class="screen">
-          <div class="card">
-            <div class="card-head"><div class="card-title">⚙️ Fine Code Amounts</div></div>
-            <div class="card-body">
-              <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Set the fine amount for each violation code. These will auto-fill when creating tasks.</p>
-              <table class="tbl">
-                <thead><tr><th>Code</th><th>Description</th><th>Severity</th><th>Amount (AED)</th><th>Save</th></tr></thead>
-                <tbody id="fineamt-tbody"></tbody>
-              </table>
+          <div class="tabs" style="margin-bottom:12px">
+            <div class="tab active" onclick="showSettingsTab('warningCategories',this)">✉️ Warning Letter List</div>
+            <div class="tab" onclick="showSettingsTab('fineCodeMaster',this)">💰 Fine Code Master</div>
+            <div class="tab" onclick="showSettingsTab('existingFineAmounts',this)">⚙️ Existing Fine Amounts</div>
+          </div>
+          <div id="settings-warningCategories" class="settings-pane">
+            <div class="card"><div class="card-head"><div><div class="card-title">✉️ Warning Letter Category Settings</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Edit each category independently. Changes apply to future letters.</div></div><span class="badge info" id="warning-category-count">15 categories</span></div>
+              <div class="card-body" style="overflow-x:auto"><table class="tbl" style="min-width:1150px"><thead><tr><th>Category</th><th>Letter Title</th><th>Warning Type</th><th>Fine Amount (AED)</th><th>Fine Code</th><th>Fine Description</th><th>Approval Required</th><th>Status</th><th>Action</th></tr></thead><tbody id="warning-category-tbody"></tbody></table><p style="font-size:11px;color:var(--text2);margin-top:10px">Required: Category, Letter Title, Warning Type and Fine Amount. Fine Code can be assigned later.</p></div>
             </div>
           </div>
+          <div id="settings-fineCodeMaster" class="settings-pane hidden">
+            <div class="card"><div class="card-head"><div class="card-title">💰 Add Fine Code</div></div><div class="card-body">
+              <div class="fgrid three"><div class="field"><label>Fine Code *</label><input id="new-fine-code" placeholder="e.g. INF46"></div><div class="field"><label>Fine Name / Description *</label><input id="new-fine-desc" placeholder="Fine description"></div><div class="field"><label>Fine Amount (AED) *</label><input id="new-fine-amount" type="number" min="0" step="0.01" placeholder="0.00"></div></div>
+              <div class="fgrid three"><div class="field"><label>Applicable Category</label><select id="new-fine-category"><option value="">All / Not assigned</option></select></div><div class="field"><label>Effective Date *</label><input id="new-fine-effective" type="date"></div><div class="field"><label>Status</label><select id="new-fine-status"><option>Active</option><option>Inactive</option></select></div></div>
+              <button class="btn primary" onclick="addFineCodeMaster()">＋ Add Fine Code</button>
+            </div></div>
+            <div class="card"><div class="card-head"><div class="card-title">Fine Code Register</div></div><div class="card-body" style="overflow-x:auto"><table class="tbl" style="min-width:850px"><thead><tr><th>Fine Code</th><th>Description</th><th>Amount (AED)</th><th>Applicable Category</th><th>Effective Date</th><th>Status</th><th>Action</th></tr></thead><tbody id="fine-code-master-tbody"></tbody></table></div></div>
+          </div>
+          <div id="settings-existingFineAmounts" class="settings-pane hidden"><div class="card"><div class="card-head"><div class="card-title">⚙️ Existing Violation Fine Amounts</div></div><div class="card-body"><p style="font-size:12px;color:var(--text2);margin-bottom:12px">Existing violation-code amounts remain separate from the warning-letter and new fine-code masters.</p><table class="tbl"><thead><tr><th>Code</th><th>Description</th><th>Severity</th><th>Amount (AED)</th><th>Save</th></tr></thead><tbody id="fineamt-tbody"></tbody></table></div></div></div>
         </div>
 
       </div>
@@ -4421,6 +4347,31 @@ var FINECODES = [
   {code:'INF45',desc:'IDENTIFIED METER/SHIFT FORGERY CASE',severity:'Major'}
 ];
 
+// Warning-letter categories supplied with the Kabi standalone generator.
+// Amounts default to zero until confirmed by an authorised administrator.
+var DEFAULT_WARNING_CATEGORIES = [
+{id:'WL01',category:'Not Working',title:'Not Working – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL02',category:'Black Trip / Camera Cover',title:'Black Trip / Camera Cover – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL03',category:'Repeated Late Login',title:'Repeated Late Login – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL04',category:'Low Trips / Zero Trips',title:'Low Trips / Zero Trips – Performance Warning Letter',warningType:'Performance Warning'},
+{id:'WL05',category:'Careem / ZED / Bolt Acceptance Violation',title:'Careem / ZED / Bolt Acceptance Violation – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL06',category:'Meter Non-Compliance',title:'Meter Non-Compliance – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL07',category:'Unauthorized Accommodation',title:'Unauthorized Accommodation – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL08',category:'Excessive Dead KM',title:'Excessive Dead KM – Performance Warning Letter',warningType:'Performance Warning'},
+{id:'WL09',category:'Private Garage Violation',title:'Private Garage Violation – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL10',category:'Company Asset Loss',title:'Company Asset Loss – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL11',category:'Vehicle / Partner Refusal',title:'Vehicle / Partner Refusal – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL12',category:'High Outstanding and Low Performance',title:'High Outstanding and Low Performance – Final Warning Letter',warningType:'Final Warning'},
+{id:'WL13',category:'Low Trips and Vehicle Idling',title:'Warning for Low Trips and Vehicle Idling Violation',warningType:'Performance Warning'},
+{id:'WL14',category:'Camera / Device Tampering',title:'Camera / Device Tampering – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL15',category:'Black Trip using Careem Booking',title:'Black Trip using Careem Booking – Written Warning Letter',warningType:'Written Warning'}
+];
+var warningLetterCategories=JSON.parse(localStorage.getItem('warningLetterCategories')||'null')||DEFAULT_WARNING_CATEGORIES.map(function(x){return Object.assign({fineAmount:0,fineCode:'',fineDescription:'',approvalRequired:'No',status:'Active'},x);});
+var fineCodeMaster=JSON.parse(localStorage.getItem('fineCodeMaster')||'[]');
+function persistWarningSettings(){localStorage.setItem('warningLetterCategories',JSON.stringify(warningLetterCategories));}
+function persistFineCodeMaster(){localStorage.setItem('fineCodeMaster',JSON.stringify(fineCodeMaster));}
+function settingsEscape(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
 // ── API CALL ──
 function api(params, cb) {
   var url = API + '?' + Object.keys(params).map(function(k){
@@ -4478,6 +4429,7 @@ function goTo(id, el) {
   if (id==='counselling') renderCounsel();
   if (id==='users') renderUsers();
   if (id==='settings') renderSettings();
+  if (id==='warnings') initWarningLetterGenerator();
   if (id==='cases') renderCaseCenter();
 }
 
@@ -4902,19 +4854,98 @@ function removeUser(id){
 }
 
 // ── SETTINGS ──
-function renderSettings() {
-  var tbody = document.getElementById('fineamt-tbody');
-  tbody.innerHTML = FINECODES.map(function(fc){
-    var amt = fineAmounts[fc.code]||'';
-    var sevBadge = '<span class="badge '+fc.severity.toLowerCase()+'">'+fc.severity+'</span>';
-    return '<tr><td><strong>'+fc.code+'</strong></td><td style="font-size:11px">'+fc.desc+'</td><td>'+sevBadge+'</td><td><input type="number" value="'+amt+'" id="amt-'+fc.code+'" style="width:90px;padding:4px 8px;border:1px solid var(--border2);border-radius:6px;font-size:12px" placeholder="0"></td><td><button class="btn sm success" onclick="saveFineAmt(\''+fc.code+'\')">Save</button></td></tr>';
-  }).join('');
+function showSettingsTab(tab,el){document.querySelectorAll('#screen-settings .settings-pane').forEach(function(p){p.classList.add('hidden');});var p=document.getElementById('settings-'+tab);if(p)p.classList.remove('hidden');document.querySelectorAll('#screen-settings .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');}
+function renderSettings(){
+ renderWarningCategories();renderFineCodeMaster();
+ var tbody=document.getElementById('fineamt-tbody');
+ tbody.innerHTML=FINECODES.map(function(fc){var amt=fineAmounts[fc.code]||'';var sev='<span class="badge '+fc.severity.toLowerCase()+'">'+fc.severity+'</span>';return '<tr><td><strong>'+settingsEscape(fc.code)+'</strong></td><td style="font-size:11px">'+settingsEscape(fc.desc)+'</td><td>'+sev+'</td><td><input type="number" min="0" step="0.01" value="'+settingsEscape(amt)+'" id="amt-'+settingsEscape(fc.code)+'" style="width:90px" placeholder="0"></td><td><button class="btn sm success" onclick="saveFineAmt(\''+settingsEscape(fc.code)+'\')">Save</button></td></tr>';}).join('');
+ var sel=document.getElementById('new-fine-category');if(sel)sel.innerHTML='<option value="">All / Not assigned</option>'+warningLetterCategories.map(function(c){return '<option value="'+settingsEscape(c.id)+'">'+settingsEscape(c.category)+'</option>';}).join('');
 }
-function saveFineAmt(code){
-  var amt = document.getElementById('amt-'+code).value;
-  fineAmounts[code] = parseFloat(amt)||0;
-  localStorage.setItem('fineAmounts',JSON.stringify(fineAmounts));
-  alert('✅ Amount saved for '+code);
+function renderWarningCategories(){
+ var tbody=document.getElementById('warning-category-tbody');document.getElementById('warning-category-count').textContent=warningLetterCategories.length+' categories';
+ tbody.innerHTML=warningLetterCategories.map(function(c,i){return '<tr><td><input required id="wl-cat-'+i+'" value="'+settingsEscape(c.category)+'" style="width:165px"></td><td><input required id="wl-title-'+i+'" value="'+settingsEscape(c.title)+'" style="width:210px"></td><td><select id="wl-type-'+i+'"><option '+(c.warningType==='Written Warning'?'selected':'')+'>Written Warning</option><option '+(c.warningType==='Performance Warning'?'selected':'')+'>Performance Warning</option><option '+(c.warningType==='Final Warning'?'selected':'')+'>Final Warning</option></select></td><td><input required type="number" min="0" step="0.01" id="wl-amount-'+i+'" value="'+settingsEscape(c.fineAmount)+'" style="width:105px"></td><td><input id="wl-code-'+i+'" value="'+settingsEscape(c.fineCode)+'" placeholder="Add later" style="width:95px"></td><td><input id="wl-desc-'+i+'" value="'+settingsEscape(c.fineDescription)+'" style="width:170px"></td><td><select id="wl-approval-'+i+'"><option '+(c.approvalRequired==='No'?'selected':'')+'>No</option><option '+(c.approvalRequired==='Yes'?'selected':'')+'>Yes</option></select></td><td><select id="wl-status-'+i+'"><option '+(c.status==='Active'?'selected':'')+'>Active</option><option '+(c.status==='Inactive'?'selected':'')+'>Inactive</option></select></td><td><button class="btn sm success" onclick="saveWarningCategory('+i+')">Save</button></td></tr>';}).join('');
+}
+function saveWarningCategory(i){
+ var c=warningLetterCategories[i],cat=document.getElementById('wl-cat-'+i).value.trim(),title=document.getElementById('wl-title-'+i).value.trim(),amt=document.getElementById('wl-amount-'+i).value;
+ if(!cat||!title||amt===''||!Number.isFinite(Number(amt))||Number(amt)<0){alert('Category, Letter Title and a valid Fine Amount (zero is allowed) are mandatory.');return;}
+ c.category=cat;c.title=title;c.warningType=document.getElementById('wl-type-'+i).value;c.fineAmount=Number(amt);c.fineCode=document.getElementById('wl-code-'+i).value.trim();c.fineDescription=document.getElementById('wl-desc-'+i).value.trim();c.approvalRequired=document.getElementById('wl-approval-'+i).value;c.status=document.getElementById('wl-status-'+i).value;
+ persistWarningSettings();renderWarningCategories();sendWarningSettingsToFrame();alert('Warning-letter category saved.');
+}
+function addFineCodeMaster(){
+ var code=document.getElementById('new-fine-code').value.trim().toUpperCase(),desc=document.getElementById('new-fine-desc').value.trim(),amt=document.getElementById('new-fine-amount').value,date=document.getElementById('new-fine-effective').value;
+ if(!code||!desc||amt===''||!date||!Number.isFinite(Number(amt))||Number(amt)<0){alert('Fine Code, Description, Amount and Effective Date are mandatory.');return;}
+ if(fineCodeMaster.some(function(x){return x.code.toUpperCase()===code;})){alert('This fine code already exists.');return;}
+ fineCodeMaster.push({code:code,description:desc,amount:Number(amt),categoryId:document.getElementById('new-fine-category').value,effectiveDate:date,status:document.getElementById('new-fine-status').value});persistFineCodeMaster();
+ ['new-fine-code','new-fine-desc','new-fine-amount','new-fine-effective'].forEach(function(id){document.getElementById(id).value='';});renderFineCodeMaster();alert('Fine code added.');
+}
+function renderFineCodeMaster(){
+ var tbody=document.getElementById('fine-code-master-tbody');if(!tbody)return;
+ tbody.innerHTML=fineCodeMaster.map(function(f,i){return '<tr><td><input id="fm-code-'+i+'" value="'+settingsEscape(f.code)+'"></td><td><input id="fm-desc-'+i+'" value="'+settingsEscape(f.description)+'" style="width:230px"></td><td><input type="number" min="0" step="0.01" id="fm-amount-'+i+'" value="'+settingsEscape(f.amount)+'" style="width:100px"></td><td><select id="fm-cat-'+i+'"><option value="">All / Not assigned</option>'+warningLetterCategories.map(function(c){return '<option value="'+settingsEscape(c.id)+'" '+(f.categoryId===c.id?'selected':'')+'>'+settingsEscape(c.category)+'</option>';}).join('')+'</select></td><td><input type="date" id="fm-date-'+i+'" value="'+settingsEscape(f.effectiveDate)+'"></td><td><select id="fm-status-'+i+'"><option '+(f.status==='Active'?'selected':'')+'>Active</option><option '+(f.status==='Inactive'?'selected':'')+'>Inactive</option></select></td><td><button class="btn sm success" onclick="saveFineCodeMaster('+i+')">Save</button></td></tr>';}).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text3)">No fine codes added yet.</td></tr>';
+}
+function saveFineCodeMaster(i){
+ var f=fineCodeMaster[i],code=document.getElementById('fm-code-'+i).value.trim().toUpperCase(),desc=document.getElementById('fm-desc-'+i).value.trim(),amt=document.getElementById('fm-amount-'+i).value,date=document.getElementById('fm-date-'+i).value;
+ if(!code||!desc||amt===''||!date||!Number.isFinite(Number(amt))||Number(amt)<0){alert('Code, Description, Amount and Effective Date are mandatory.');return;}
+ if(fineCodeMaster.some(function(x,j){return j!==i&&x.code.toUpperCase()===code;})){alert('Duplicate fine code.');return;}
+ f.code=code;f.description=desc;f.amount=Number(amt);f.categoryId=document.getElementById('fm-cat-'+i).value;f.effectiveDate=date;f.status=document.getElementById('fm-status-'+i).value;persistFineCodeMaster();renderFineCodeMaster();alert('Fine code saved.');
+}
+function saveFineAmt(code){var amt=document.getElementById('amt-'+code).value;if(amt===''||!Number.isFinite(Number(amt))||Number(amt)<0){alert('Enter a valid non-negative amount.');return;}fineAmounts[code]=Number(amt);localStorage.setItem('fineAmounts',JSON.stringify(fineAmounts));alert('Amount saved for '+code);}
+
+// ── SETTINGS-DRIVEN WARNING LETTER DRAFT GENERATOR ──
+function activeWarningCategories(){return warningLetterCategories.filter(function(x){return x.status==='Active';});}
+function sendWarningSettingsToFrame(){
+ var frame=document.getElementById('warning-letter-frame');
+ if(!frame||!frame.contentWindow)return;
+ frame.contentWindow.postMessage({type:'OCC_WARNING_SETTINGS',categories:warningLetterCategories.map(function(c){return {id:c.id,category:c.category,fineAmount:c.fineAmount,fineCode:c.fineCode,status:c.status,approvalRequired:c.approvalRequired};})},'*');
+}
+function initWarningLetterGenerator(){
+ var frame=document.getElementById('warning-letter-frame');
+ if(frame){sendWarningSettingsToFrame();frame.addEventListener('load',sendWarningSettingsToFrame,{once:true});}
+ document.getElementById('wl-active-count').textContent=activeWarningCategories().length+' active categories';
+}
+function loadWarningCategory(){
+ var id=document.getElementById('gen-category').value;
+ var c=warningLetterCategories.find(function(x){return x.id===id&&x.status==='Active';});
+ document.getElementById('gen-fine-amount').value=c?Number(c.fineAmount||0):'';
+ document.getElementById('gen-fine-code').value=c?(c.fineCode||''):'';
+}
+function warningLetterData(){
+ var id=document.getElementById('gen-category').value;
+ var cat=warningLetterCategories.find(function(x){return x.id===id&&x.status==='Active';});
+ return {caseId:document.getElementById('gen-case-id').value.trim(),category:cat,letterDate:document.getElementById('gen-date').value,driverName:document.getElementById('gen-driver-name').value.trim(),driverId:document.getElementById('gen-driver-id').value.trim(),meter:document.getElementById('gen-meter').value.trim(),shift:document.getElementById('gen-shift').value,fineAmount:Number(document.getElementById('gen-fine-amount').value||0),fineCode:document.getElementById('gen-fine-code').value.trim(),outstanding:document.getElementById('gen-outstanding').value,issuedBy:document.getElementById('gen-issued-by').value.trim(),signatureStatus:document.getElementById('gen-signature').value,details:document.getElementById('gen-details').value.trim(),resolution:document.getElementById('gen-resolution').value.trim()};
+}
+function validateWarningLetterData(x){
+ if(!x.caseId||!x.category||!x.letterDate||!x.driverName||!x.driverId||!x.issuedBy||!x.details){alert('Complete all required fields: Case ID, category, date, driver name, driver ID, issued by and incident details.');return false;}
+ if(x.category.approvalRequired==='Yes'){alert('This category requires approval. Approval workflow is not connected yet; do not issue this letter from the prototype.');return false;}
+ if(x.outstanding!==''&&(!Number.isFinite(Number(x.outstanding))||Number(x.outstanding)<0)){alert('Enter a valid non-negative outstanding amount.');return false;}
+ if(x.signatureStatus.indexOf('Refused')===0&&!x.resolution){alert('Enter the reason / resolution when the driver refuses to sign.');return false;}
+ return true;
+}
+function warningLetterPreviewHtml(x){
+ var esc=settingsEscape;
+ return '<div style="max-width:780px;margin:auto;padding:24px;color:#111;font-family:Arial,sans-serif;line-height:1.55"><div style="text-align:center;border-bottom:2px solid #1a3a5c;padding-bottom:12px;margin-bottom:18px"><h2 style="color:#1a3a5c">KABI TAXI LLC</h2><strong>'+esc(x.category.title)+'</strong></div><p><strong>Date:</strong> '+esc(x.letterDate)+'</p><p><strong>Case ID:</strong> '+esc(x.caseId)+'</p><p><strong>To:</strong> '+esc(x.driverName)+' &nbsp; <strong>Driver ID:</strong> '+esc(x.driverId)+'</p><p><strong>Meter / CT:</strong> '+esc(x.meter||'—')+' &nbsp; <strong>Shift:</strong> '+esc(x.shift||'—')+'</p><p>Dear '+esc(x.driverName)+',</p><p>This letter serves as a '+esc(x.category.warningType||'written warning')+' regarding the following reported matter:</p><div style="white-space:pre-wrap;border:1px solid #ddd;padding:12px;margin:12px 0">'+esc(x.details)+'</div><p><strong>Fine amount:</strong> AED '+esc(x.fineAmount.toFixed(2))+' &nbsp; <strong>Fine code:</strong> '+esc(x.fineCode||'To be assigned')+'</p><p><strong>Outstanding amount:</strong> '+(x.outstanding===''?'Not specified':'AED '+esc(Number(x.outstanding).toFixed(2)))+'</p><p><strong>Required corrective action:</strong></p><div style="white-space:pre-wrap">'+esc(x.resolution||'Comply with company operational requirements and avoid recurrence.')+'</div><p style="margin-top:28px">Issued by: '+esc(x.issuedBy)+'</p><div style="display:flex;justify-content:space-between;margin-top:36px"><div>Driver signature: ____________________<br/>Name: '+esc(x.driverName)+'</div><div>Date: ____________________<br/>Acknowledgment: '+esc(x.signatureStatus)+'</div></div><p style="font-size:10px;color:#666;margin-top:24px">Prototype draft. This is not the approved company template until the supplied generator wording and layout are integrated.</p></div>';
+}
+function previewWarningLetter(){
+ var x=warningLetterData();if(!validateWarningLetterData(x))return;
+ document.getElementById('warning-letter-preview-body').innerHTML=warningLetterPreviewHtml(x);
+ document.getElementById('warning-letter-preview').style.display='block';
+}
+function saveWarningLetterDraft(){
+ var x=warningLetterData();if(!validateWarningLetterData(x))return;
+ var drafts=JSON.parse(localStorage.getItem('occWarningLetterDrafts')||'[]');
+ x.savedAt=new Date().toISOString();x.status='Local Draft';x.categoryId=x.category.id;x.category=x.category.category;
+ drafts.unshift(x);localStorage.setItem('occWarningLetterDrafts',JSON.stringify(drafts));
+ renderWarningDrafts();alert('Draft saved in this browser only. It has not been centrally issued or recorded.');
+}
+function renderWarningDrafts(){
+ var body=document.getElementById('warning-drafts-tbody');if(!body)return;
+ var drafts=JSON.parse(localStorage.getItem('occWarningLetterDrafts')||'[]');
+ body.innerHTML=drafts.slice(0,50).map(function(x){return '<tr><td>'+settingsEscape(new Date(x.savedAt).toLocaleString())+'</td><td>'+settingsEscape(x.caseId)+'</td><td>'+settingsEscape(x.driverId)+'</td><td>'+settingsEscape(x.category)+'</td><td>'+settingsEscape(Number(x.fineAmount||0).toFixed(2))+'</td><td>'+settingsEscape(x.status)+'</td></tr>';}).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text3)">No local drafts saved.</td></tr>';
+}
+function printWarningLetter(){
+ var x=warningLetterData();if(!validateWarningLetterData(x))return;
+ var w=window.open('','_blank');if(!w){alert('Allow pop-ups to print the letter.');return;}
+ w.document.write('<!doctype html><html><head><title>Warning Letter - '+settingsEscape(x.caseId)+'</title><style>body{font-family:Arial;margin:20px}@page{size:A4;margin:18mm}</style></head><body>'+warningLetterPreviewHtml(x)+'</body></html>');
+ w.document.close();w.focus();w.print();
 }
 
 // ── UTILS ──
