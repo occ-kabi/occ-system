@@ -375,16 +375,25 @@ body{font-family:Arial,sans-serif;font-size:13px;background:var(--bg);color:var(
 
         <!-- SETTINGS -->
         <div id="screen-settings" class="screen">
-          <div class="card">
-            <div class="card-head"><div class="card-title">⚙️ Fine Code Amounts</div></div>
-            <div class="card-body">
-              <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Set the fine amount for each violation code. These will auto-fill when creating tasks.</p>
-              <table class="tbl">
-                <thead><tr><th>Code</th><th>Description</th><th>Severity</th><th>Amount (AED)</th><th>Save</th></tr></thead>
-                <tbody id="fineamt-tbody"></tbody>
-              </table>
+          <div class="tabs" style="margin-bottom:12px">
+            <div class="tab active" onclick="showSettingsTab('warningCategories',this)">✉️ Warning Letter List</div>
+            <div class="tab" onclick="showSettingsTab('fineCodeMaster',this)">💰 Fine Code Master</div>
+            <div class="tab" onclick="showSettingsTab('existingFineAmounts',this)">⚙️ Existing Fine Amounts</div>
+          </div>
+          <div id="settings-warningCategories" class="settings-pane">
+            <div class="card"><div class="card-head"><div><div class="card-title">✉️ Warning Letter Category Settings</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Edit each category independently. Changes apply to future letters.</div></div><span class="badge info" id="warning-category-count">15 categories</span></div>
+              <div class="card-body" style="overflow-x:auto"><table class="tbl" style="min-width:1150px"><thead><tr><th>Category</th><th>Letter Title</th><th>Warning Type</th><th>Fine Amount (AED)</th><th>Fine Code</th><th>Fine Description</th><th>Approval Required</th><th>Status</th><th>Action</th></tr></thead><tbody id="warning-category-tbody"></tbody></table><p style="font-size:11px;color:var(--text2);margin-top:10px">Required: Category, Letter Title, Warning Type and Fine Amount. Fine Code can be assigned later.</p></div>
             </div>
           </div>
+          <div id="settings-fineCodeMaster" class="settings-pane hidden">
+            <div class="card"><div class="card-head"><div class="card-title">💰 Add Fine Code</div></div><div class="card-body">
+              <div class="fgrid three"><div class="field"><label>Fine Code *</label><input id="new-fine-code" placeholder="e.g. INF46"></div><div class="field"><label>Fine Name / Description *</label><input id="new-fine-desc" placeholder="Fine description"></div><div class="field"><label>Fine Amount (AED) *</label><input id="new-fine-amount" type="number" min="0" step="0.01" placeholder="0.00"></div></div>
+              <div class="fgrid three"><div class="field"><label>Applicable Category</label><select id="new-fine-category"><option value="">All / Not assigned</option></select></div><div class="field"><label>Effective Date *</label><input id="new-fine-effective" type="date"></div><div class="field"><label>Status</label><select id="new-fine-status"><option>Active</option><option>Inactive</option></select></div></div>
+              <button class="btn primary" onclick="addFineCodeMaster()">＋ Add Fine Code</button>
+            </div></div>
+            <div class="card"><div class="card-head"><div class="card-title">Fine Code Register</div></div><div class="card-body" style="overflow-x:auto"><table class="tbl" style="min-width:850px"><thead><tr><th>Fine Code</th><th>Description</th><th>Amount (AED)</th><th>Applicable Category</th><th>Effective Date</th><th>Status</th><th>Action</th></tr></thead><tbody id="fine-code-master-tbody"></tbody></table></div></div>
+          </div>
+          <div id="settings-existingFineAmounts" class="settings-pane hidden"><div class="card"><div class="card-head"><div class="card-title">⚙️ Existing Violation Fine Amounts</div></div><div class="card-body"><p style="font-size:12px;color:var(--text2);margin-bottom:12px">Existing violation-code amounts remain separate from the warning-letter and new fine-code masters.</p><table class="tbl"><thead><tr><th>Code</th><th>Description</th><th>Severity</th><th>Amount (AED)</th><th>Save</th></tr></thead><tbody id="fineamt-tbody"></tbody></table></div></div></div>
         </div>
 
       </div>
@@ -4421,6 +4430,31 @@ var FINECODES = [
   {code:'INF45',desc:'IDENTIFIED METER/SHIFT FORGERY CASE',severity:'Major'}
 ];
 
+// Warning-letter categories supplied with the Kabi standalone generator.
+// Amounts default to zero until confirmed by an authorised administrator.
+var DEFAULT_WARNING_CATEGORIES = [
+{id:'WL01',category:'Not Working',title:'Not Working – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL02',category:'Black Trip / Camera Cover',title:'Black Trip / Camera Cover – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL03',category:'Repeated Late Login',title:'Repeated Late Login – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL04',category:'Low Trips / Zero Trips',title:'Low Trips / Zero Trips – Performance Warning Letter',warningType:'Performance Warning'},
+{id:'WL05',category:'Careem / ZED / Bolt Acceptance Violation',title:'Careem / ZED / Bolt Acceptance Violation – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL06',category:'Meter Non-Compliance',title:'Meter Non-Compliance – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL07',category:'Unauthorized Accommodation',title:'Unauthorized Accommodation – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL08',category:'Excessive Dead KM',title:'Excessive Dead KM – Performance Warning Letter',warningType:'Performance Warning'},
+{id:'WL09',category:'Private Garage Violation',title:'Private Garage Violation – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL10',category:'Company Asset Loss',title:'Company Asset Loss – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL11',category:'Vehicle / Partner Refusal',title:'Vehicle / Partner Refusal – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL12',category:'High Outstanding and Low Performance',title:'High Outstanding and Low Performance – Final Warning Letter',warningType:'Final Warning'},
+{id:'WL13',category:'Low Trips and Vehicle Idling',title:'Warning for Low Trips and Vehicle Idling Violation',warningType:'Performance Warning'},
+{id:'WL14',category:'Camera / Device Tampering',title:'Camera / Device Tampering – Written Warning Letter',warningType:'Written Warning'},
+{id:'WL15',category:'Black Trip using Careem Booking',title:'Black Trip using Careem Booking – Written Warning Letter',warningType:'Written Warning'}
+];
+var warningLetterCategories=JSON.parse(localStorage.getItem('warningLetterCategories')||'null')||DEFAULT_WARNING_CATEGORIES.map(function(x){return Object.assign({fineAmount:0,fineCode:'',fineDescription:'',approvalRequired:'No',status:'Active'},x);});
+var fineCodeMaster=JSON.parse(localStorage.getItem('fineCodeMaster')||'[]');
+function persistWarningSettings(){localStorage.setItem('warningLetterCategories',JSON.stringify(warningLetterCategories));}
+function persistFineCodeMaster(){localStorage.setItem('fineCodeMaster',JSON.stringify(fineCodeMaster));}
+function settingsEscape(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
 // ── API CALL ──
 function api(params, cb) {
   var url = API + '?' + Object.keys(params).map(function(k){
@@ -4902,20 +4936,41 @@ function removeUser(id){
 }
 
 // ── SETTINGS ──
-function renderSettings() {
-  var tbody = document.getElementById('fineamt-tbody');
-  tbody.innerHTML = FINECODES.map(function(fc){
-    var amt = fineAmounts[fc.code]||'';
-    var sevBadge = '<span class="badge '+fc.severity.toLowerCase()+'">'+fc.severity+'</span>';
-    return '<tr><td><strong>'+fc.code+'</strong></td><td style="font-size:11px">'+fc.desc+'</td><td>'+sevBadge+'</td><td><input type="number" value="'+amt+'" id="amt-'+fc.code+'" style="width:90px;padding:4px 8px;border:1px solid var(--border2);border-radius:6px;font-size:12px" placeholder="0"></td><td><button class="btn sm success" onclick="saveFineAmt(\''+fc.code+'\')">Save</button></td></tr>';
-  }).join('');
+function showSettingsTab(tab,el){document.querySelectorAll('#screen-settings .settings-pane').forEach(function(p){p.classList.add('hidden');});var p=document.getElementById('settings-'+tab);if(p)p.classList.remove('hidden');document.querySelectorAll('#screen-settings .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');}
+function renderSettings(){
+ renderWarningCategories();renderFineCodeMaster();
+ var tbody=document.getElementById('fineamt-tbody');
+ tbody.innerHTML=FINECODES.map(function(fc){var amt=fineAmounts[fc.code]||'';var sev='<span class="badge '+fc.severity.toLowerCase()+'">'+fc.severity+'</span>';return '<tr><td><strong>'+settingsEscape(fc.code)+'</strong></td><td style="font-size:11px">'+settingsEscape(fc.desc)+'</td><td>'+sev+'</td><td><input type="number" min="0" step="0.01" value="'+settingsEscape(amt)+'" id="amt-'+settingsEscape(fc.code)+'" style="width:90px" placeholder="0"></td><td><button class="btn sm success" onclick="saveFineAmt(\''+settingsEscape(fc.code)+'\')">Save</button></td></tr>';}).join('');
+ var sel=document.getElementById('new-fine-category');if(sel)sel.innerHTML='<option value="">All / Not assigned</option>'+warningLetterCategories.map(function(c){return '<option value="'+settingsEscape(c.id)+'">'+settingsEscape(c.category)+'</option>';}).join('');
 }
-function saveFineAmt(code){
-  var amt = document.getElementById('amt-'+code).value;
-  fineAmounts[code] = parseFloat(amt)||0;
-  localStorage.setItem('fineAmounts',JSON.stringify(fineAmounts));
-  alert('✅ Amount saved for '+code);
+function renderWarningCategories(){
+ var tbody=document.getElementById('warning-category-tbody');document.getElementById('warning-category-count').textContent=warningLetterCategories.length+' categories';
+ tbody.innerHTML=warningLetterCategories.map(function(c,i){return '<tr><td><input required id="wl-cat-'+i+'" value="'+settingsEscape(c.category)+'" style="width:165px"></td><td><input required id="wl-title-'+i+'" value="'+settingsEscape(c.title)+'" style="width:210px"></td><td><select id="wl-type-'+i+'"><option '+(c.warningType==='Written Warning'?'selected':'')+'>Written Warning</option><option '+(c.warningType==='Performance Warning'?'selected':'')+'>Performance Warning</option><option '+(c.warningType==='Final Warning'?'selected':'')+'>Final Warning</option></select></td><td><input required type="number" min="0" step="0.01" id="wl-amount-'+i+'" value="'+settingsEscape(c.fineAmount)+'" style="width:105px"></td><td><input id="wl-code-'+i+'" value="'+settingsEscape(c.fineCode)+'" placeholder="Add later" style="width:95px"></td><td><input id="wl-desc-'+i+'" value="'+settingsEscape(c.fineDescription)+'" style="width:170px"></td><td><select id="wl-approval-'+i+'"><option '+(c.approvalRequired==='No'?'selected':'')+'>No</option><option '+(c.approvalRequired==='Yes'?'selected':'')+'>Yes</option></select></td><td><select id="wl-status-'+i+'"><option '+(c.status==='Active'?'selected':'')+'>Active</option><option '+(c.status==='Inactive'?'selected':'')+'>Inactive</option></select></td><td><button class="btn sm success" onclick="saveWarningCategory('+i+')">Save</button></td></tr>';}).join('');
 }
+function saveWarningCategory(i){
+ var c=warningLetterCategories[i],cat=document.getElementById('wl-cat-'+i).value.trim(),title=document.getElementById('wl-title-'+i).value.trim(),amt=document.getElementById('wl-amount-'+i).value;
+ if(!cat||!title||amt===''||!Number.isFinite(Number(amt))||Number(amt)<0){alert('Category, Letter Title and a valid Fine Amount (zero is allowed) are mandatory.');return;}
+ c.category=cat;c.title=title;c.warningType=document.getElementById('wl-type-'+i).value;c.fineAmount=Number(amt);c.fineCode=document.getElementById('wl-code-'+i).value.trim();c.fineDescription=document.getElementById('wl-desc-'+i).value.trim();c.approvalRequired=document.getElementById('wl-approval-'+i).value;c.status=document.getElementById('wl-status-'+i).value;
+ persistWarningSettings();renderWarningCategories();alert('Warning-letter category saved.');
+}
+function addFineCodeMaster(){
+ var code=document.getElementById('new-fine-code').value.trim().toUpperCase(),desc=document.getElementById('new-fine-desc').value.trim(),amt=document.getElementById('new-fine-amount').value,date=document.getElementById('new-fine-effective').value;
+ if(!code||!desc||amt===''||!date||!Number.isFinite(Number(amt))||Number(amt)<0){alert('Fine Code, Description, Amount and Effective Date are mandatory.');return;}
+ if(fineCodeMaster.some(function(x){return x.code.toUpperCase()===code;})){alert('This fine code already exists.');return;}
+ fineCodeMaster.push({code:code,description:desc,amount:Number(amt),categoryId:document.getElementById('new-fine-category').value,effectiveDate:date,status:document.getElementById('new-fine-status').value});persistFineCodeMaster();
+ ['new-fine-code','new-fine-desc','new-fine-amount','new-fine-effective'].forEach(function(id){document.getElementById(id).value='';});renderFineCodeMaster();alert('Fine code added.');
+}
+function renderFineCodeMaster(){
+ var tbody=document.getElementById('fine-code-master-tbody');if(!tbody)return;
+ tbody.innerHTML=fineCodeMaster.map(function(f,i){return '<tr><td><input id="fm-code-'+i+'" value="'+settingsEscape(f.code)+'"></td><td><input id="fm-desc-'+i+'" value="'+settingsEscape(f.description)+'" style="width:230px"></td><td><input type="number" min="0" step="0.01" id="fm-amount-'+i+'" value="'+settingsEscape(f.amount)+'" style="width:100px"></td><td><select id="fm-cat-'+i+'"><option value="">All / Not assigned</option>'+warningLetterCategories.map(function(c){return '<option value="'+settingsEscape(c.id)+'" '+(f.categoryId===c.id?'selected':'')+'>'+settingsEscape(c.category)+'</option>';}).join('')+'</select></td><td><input type="date" id="fm-date-'+i+'" value="'+settingsEscape(f.effectiveDate)+'"></td><td><select id="fm-status-'+i+'"><option '+(f.status==='Active'?'selected':'')+'>Active</option><option '+(f.status==='Inactive'?'selected':'')+'>Inactive</option></select></td><td><button class="btn sm success" onclick="saveFineCodeMaster('+i+')">Save</button></td></tr>';}).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text3)">No fine codes added yet.</td></tr>';
+}
+function saveFineCodeMaster(i){
+ var f=fineCodeMaster[i],code=document.getElementById('fm-code-'+i).value.trim().toUpperCase(),desc=document.getElementById('fm-desc-'+i).value.trim(),amt=document.getElementById('fm-amount-'+i).value,date=document.getElementById('fm-date-'+i).value;
+ if(!code||!desc||amt===''||!date||!Number.isFinite(Number(amt))||Number(amt)<0){alert('Code, Description, Amount and Effective Date are mandatory.');return;}
+ if(fineCodeMaster.some(function(x,j){return j!==i&&x.code.toUpperCase()===code;})){alert('Duplicate fine code.');return;}
+ f.code=code;f.description=desc;f.amount=Number(amt);f.categoryId=document.getElementById('fm-cat-'+i).value;f.effectiveDate=date;f.status=document.getElementById('fm-status-'+i).value;persistFineCodeMaster();renderFineCodeMaster();alert('Fine code saved.');
+}
+function saveFineAmt(code){var amt=document.getElementById('amt-'+code).value;if(amt===''||!Number.isFinite(Number(amt))||Number(amt)<0){alert('Enter a valid non-negative amount.');return;}fineAmounts[code]=Number(amt);localStorage.setItem('fineAmounts',JSON.stringify(fineAmounts));alert('Amount saved for '+code);}
 
 // ── UTILS ──
 function clearForm(ids){ids.forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});}
